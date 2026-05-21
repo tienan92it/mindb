@@ -1,5 +1,9 @@
 # mindb
 
+<p align="center">
+  <img src="assets/branding/mindb-logo-square.png" alt="mindb logo" width="160">
+</p>
+
 AI-powered PostgreSQL client with a terminal-like UI for iOS and desktop.
 
 ## Setup
@@ -29,6 +33,39 @@ Use `localhost:5432`, database `postgres`, user `postgres`, password `postgres`.
 mindb connects directly to PostgreSQL over TCP. For local or non-TLS databases, iOS blocks cleartext HTTP/TCP by default. `ios/Runner/Info.plist` sets `NSAppTransportSecurity` → `NSAllowsArbitraryLoads` to `true` so non-TLS database connections work during development.
 
 For production, prefer SSL-enabled Postgres (`Use SSL` in the connection form) and tighten ATS exceptions.
+
+## iOS device install
+
+The Xcode project uses **automatic signing** with team `7Y2EHDSMDJ` (personal Apple ID) and bundle ID `app.mindb.mindb`.
+
+If install fails with a missing provisioning profile:
+
+1. Connect the iPhone and unlock/trust the Mac.
+2. Open `ios/Runner.xcworkspace` in Xcode.
+3. Select the **Runner** target → **Signing & Capabilities**.
+4. Confirm **Automatically manage signing** is enabled and your personal team is selected.
+5. Build once from Xcode (`Product → Run`) so the device is registered and a profile is created.
+6. Run again from Flutter: `flutter run -d <device-id>`.
+
+### iOS 26+ debug crash (JIT)
+
+On physical devices running **iOS 26+**, `flutter run` in **debug** mode can crash at startup with:
+
+```text
+Crash occurred when compiling unknown function in unoptimized JIT mode
+```
+
+Apple blocks in-process JIT on newer iOS releases. This project uses Flutter **3.27.1**, which predates the engine fix for that restriction.
+
+**Workarounds (pick one):**
+
+| Goal | Command |
+|---|---|
+| Run on Genos now | `flutter run --profile -d Genos` or `flutter run --release -d Genos` |
+| Debug + hot reload | Use the iOS Simulator, or upgrade Flutter to latest stable |
+| Upgrade Flutter (fixes debug on device) | `flutter upgrade` then `flutter run -d Genos` |
+
+Profile/release use ahead-of-time (AOT) compilation and do not hit the JIT crash.
 
 ## Architecture
 
