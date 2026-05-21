@@ -31,6 +31,25 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   drift_dev: ^2.22.1
   build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  image_path: assets/branding/mindb-logo-square.png
+  android: true
+  ios: true
+  macos:
+    generate: true
+  web:
+    generate: true
+    background_color: "#0D0D0D"
+    theme_color: "#2DD4BF"
+  windows:
+    generate: true
+    icon_size: 256
+  adaptive_icon_background: "#0D0D0D"
+  adaptive_icon_foreground: assets/branding/mindb-logo-square.png
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/branding/

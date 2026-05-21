@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=mindb
+Comment=AI-powered PostgreSQL client with a terminal-like UI
+Exec=mindb
+Icon=app.mindb.mindb
+Terminal=false
+Type=Application
+Categories=Development;Database;
+StartupNotify=true
