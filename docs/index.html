@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="mindb — AI-powered PostgreSQL client with a terminal-like UI.">
+  <meta name="theme-color" content="#2DD4BF">
+  <title>mindb — PostgreSQL, terminal calm</title>
+  <link rel="icon" type="image/png" href="assets/mindb-logo-square.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header wrap">
+    <img class="logo" src="assets/mindb-logo-square.png" width="96" height="96" alt="mindb logo">
+    <h1>mindb</h1>
+    <p class="tagline">PostgreSQL client with a terminal-like UI and an AI query assistant.</p>
+    <p class="prompt"><span>llm:</span> OpenAI · Anthropic · Kimi</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/tienan92it/mindb">View on GitHub</a>
+      <a class="btn" href="#install">Get started</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap" aria-labelledby="features-heading">
+      <h2 id="features-heading">Features</h2>
+      <div class="features">
+        <article class="feature">
+          <strong>Terminal session</strong>
+          <p>Dark, monospace transcript. Ask in plain language or prefix with <code>sql:</code> for direct queries.</p>
+        </article>
+        <article class="feature">
+          <strong>Schema-aware AI</strong>
+          <p>Tools for schema discovery, SQL execution, and explain plans — answers grounded in database evidence.</p>
+        </article>
+        <article class="feature">
+          <strong>Persisted connections</strong>
+          <p>Save profiles locally. Passwords and API keys stay in secure storage, not in the repo.</p>
+        </article>
+        <article class="feature">
+          <strong>Safety by default</strong>
+          <p>Read-only mode, write/destructive classification, LIMIT injection, and confirmation before risky SQL.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" aria-labelledby="demo-heading">
+      <h2 id="demo-heading">Session</h2>
+      <div class="terminal" role="img" aria-label="Example mindb session transcript">
+        <div class="terminal-bar">partner_hub · llm: OpenAI · gpt-4o-mini</div>
+        <div class="terminal-body">
+          <div class="line-system">Connected to partner_hub (db.example.com)</div>
+          <div class="line-system">llm: OpenAI · gpt-4o-mini</div>
+          <div class="line-user">&gt; show distinct status in partner_users</div>
+          <div class="line-system">tool → execute_sql</div>
+          <div class="line-assist">Two status values: active, inactive.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" aria-labelledby="providers-heading">
+      <h2 id="providers-heading">LLM providers</h2>
+      <div class="providers">
+        <span class="chip">OpenAI</span>
+        <span class="chip">Anthropic</span>
+        <span class="chip">Kimi (Moonshot)</span>
+      </div>
+    </section>
+
+    <section class="wrap" id="install" aria-labelledby="install-heading">
+      <h2 id="install-heading">Install</h2>
+      <div class="install">
+        <button class="copy" type="button" data-copy="install-cmd" aria-label="Copy install commands">copy</button>
+        <pre id="install-cmd"><code>git clone git@github.com:tienan92it/mindb.git
+cd mindb
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter run</code></pre>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <p>Flutter · Riverpod · Drift · postgres</p>
+    <p><a href="https://github.com/tienan92it/mindb">github.com/tienan92it/mindb</a></p>
+  </footer>
+
+  <script>
+    document.querySelectorAll('[data-copy]').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const id = button.getAttribute('data-copy');
+        const text = document.getElementById(id)?.textContent ?? '';
+        try {
+          await navigator.clipboard.writeText(text.trim());
+          const label = button.textContent;
+          button.textContent = 'copied';
+          setTimeout(() => { button.textContent = label; }, 1200);
+        } catch (_) {
+          button.textContent = 'failed';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
