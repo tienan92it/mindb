@@ -1,0 +1,32 @@
+name: Auto-ship
+
+on:
+  check_suite:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge-when-green:
+    if: github.event.check_suite.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Merge PRs labeled auto-ship when checks pass
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PRS=$(gh pr list --repo "${{ github.repository }}" --state open --label auto-ship --json number,headRefOid --jq '.[] | select(.headRefOid == "'"${{ github.event.check_suite.head_sha }}"'") | .number')
+          for pr in $PRS; do
+            [ -z "$pr" ] && continue
+            echo "Auto-merging PR #$pr"
+            gh pr merge "$pr" --repo "${{ github.repository }}" --squash --delete-branch || true
+            ISSUE=$(gh pr view "$pr" --repo "${{ github.repository }}" --json body --jq '.body' | grep -oE 'Fixes #[0-9]+' | head -1 | tr -d 'Fixes #')
+            if [ -n "$ISSUE" ]; then
+              gh issue edit "$ISSUE" --repo "${{ github.repository }}" --remove-label building --add-label shipped 2>/dev/null || true
+              gh issue close "$ISSUE" --repo "${{ github.repository }}" --comment "Auto-shipped via PR #$pr" 2>/dev/null || true
+            fi
+          done

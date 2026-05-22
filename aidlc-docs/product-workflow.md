@@ -6,11 +6,12 @@ Professional loop for mindb: explore → plan → build → QA → review → re
 
 | When | What | Owner |
 |------|------|-------|
-| **Daily 09:00 ICT** | Explore (≤3 ideas, score, 0–1 ship candidate) | Cursor Automation |
-| **Per ship candidate** | Plan → branch → PR | Agent / you |
+| **Daily 09:00 ICT** | Explore (≤3 ideas, score, 0–1 ship candidate) | Cursor **Daily Explore** |
+| **Daily 10:30 ICT** | Build oldest `planned` issue → code PR | Cursor **Daily Build** |
 | **Every PR** | CI + review checklist | GitHub Actions |
-| **On release tag** | GitHub Release + announce | GitHub Actions + Cursor |
-| **After tag** | Landing changelog PR | Agent / you |
+| **CI green + `auto-ship`** | Squash merge implementation PR | GitHub Actions `auto-ship.yml` |
+| **On release tag** | GitHub Release + announce webhook | GitHub Actions + Cursor |
+| **After tag** | Landing changelog PR | Cursor **Release Announce** |
 
 ## Core value filter (anti-slop)
 
@@ -26,20 +27,21 @@ Reject: accounts, sync, dashboards, multi-DB, hosted AI, plugin ecosystems. See 
 
 ### 1. Explore
 
-- **Cursor:** [mindb Daily Explore](../.cursor/automations/daily-explore.workflow.json) — opens PR with brief + GitHub issue.
+- **Cursor:** [mindb Daily Explore](../.cursor/automations/daily-explore.workflow.json) — brief PR + GitHub issue (`planned` if score ≥ 7). **No product code.**
 - **Manual:** Issue template **Explore** or file in `aidlc-docs/explore/`.
 
 ### 2. Plan
 
-- Trivial: skip docs.
+- Trivial: skip docs (explore issue + brief is enough).
 - Multi-component: update `design.md`.
 - Material choice: append `decisions.md`.
 
 ### 3. Build
 
-- Branch from `master`.
-- Smallest diff; match existing patterns.
-- Tests for behavior changes.
+- **Cursor:** [mindb Daily Build](../.cursor/automations/daily-build.workflow.json) — picks oldest open `planned` issue, implements on `fix/*` or `feat/*`, runs analyze/test, opens PR with `Fixes #N`.
+- **Labels:** `planned` → `building` when PR opens; `shipped` + close when merged (auto-ship workflow or manual merge).
+- **Auto-ship:** low-risk PRs get label `auto-ship`; `.github/workflows/auto-ship.yml` merges when CI green. Otherwise human merges.
+- Branch from `master`. Smallest diff. Tests for behavior changes.
 
 ### 4. QA
 
@@ -78,13 +80,17 @@ Create in repo settings:
 | Label | Use |
 |-------|-----|
 | `explore` | Daily exploration |
-| `planned` | Approved to build |
+| `planned` | Approved to build (Daily Build picks these) |
+| `building` | Implementation PR open |
+| `shipped` | Merged to master |
+| `auto-ship` | PR: merge when CI green |
 | `bug` | Defect |
 | `release` | Release tracking |
 
 ## Automations setup
 
-1. Open prefill URLs in `.cursor/automations/README.md` and confirm in Cursor UI.
-2. Connect GitHub for `tienan92it/mindb` (Issues + Pull requests write).
-3. Add Cloud secret **`GH_TOKEN`** so daily explore can run `gh issue create` (see `.cursor/automations/README.md`).
-4. Add release webhook secrets after creating **Release Announce** automation.
+1. Enable **Daily Explore**, **Daily Build**, and **Release Announce** — see `.cursor/automations/README.md`.
+2. Connect GitHub for `tienan92it/mindb` (Issues + Pull requests + Contents write).
+3. Cloud secret **`GH_TOKEN`** for all `gh` / git push operations.
+4. Labels: `explore`, `planned`, `building`, `shipped`, `auto-ship`, `bug`, `release`.
+5. Release webhook secrets after **Release Announce** automation.

@@ -38,6 +38,16 @@
 
 **Alternatives**: Manual weekly planning only; Linear/Jira without repo-linked briefs.
 
+## 2026-05-22 — Daily Build + auto-ship
+
+**Context**: Explore-only loop left implementation manual; user wants full product + dev team automation.
+
+**Choice**: Second Cursor automation **Daily Build** (10:30 ICT) implements oldest `planned` issue; optional PR label `auto-ship` + `.github/workflows/auto-ship.yml` merges when CI green. Open pull request tool disabled — use `gh pr create` + push.
+
+**Trade-offs**: Auto-ship skips human review for low-risk fixes; one issue per build run; build may fail on large scope despite explore gates.
+
+**Alternatives**: Single combined explore+build prompt; always require human merge; GitHub issue webhook trigger (not available in Cursor Automations).
+
 ## 2026-05-21 — User API keys only
 
 **Context**: No hosted backend in v1.

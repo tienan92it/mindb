@@ -1,0 +1,18 @@
+{
+  "name": "mindb Daily Build",
+  "description": "Implements the oldest open planned issue: code, tests, PR. One ship candidate per run.",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "schedule",
+        "cron": "30 3 * * *"
+      }
+    ],
+    "gitConfig": {
+      "repository": "https://github.com/tienan92it/mindb",
+      "branch": "master"
+    },
+    "memoryEnabled": true,
+    "prompt": "You are the mindb dev team implementing a planned ship candidate.\n\nRead first:\n- aidlc-docs/business-model.md (non-goals)\n- aidlc-docs/design.md\n- aidlc-docs/qa-smoke.md\n- .cursor/rules/product-team.mdc\n- .github/pull_request_template.md\n\n## Pick work\n\n1. List candidates: gh issue list --repo tienan92it/mindb --label planned --state open\n2. If none, exit with \"No planned issues — nothing to build.\"\n3. Skip any issue that already has an open implementation PR (search: gh pr list --repo tienan92it/mindb --state open --search \"Fixes #<N>\" in:body)\n4. Pick the **oldest** planned issue (lowest issue number).\n5. Read full issue + linked explore brief PR/file from the issue body.\n6. Re-verify anti-slop gates. If any fail now, remove planned label, comment why, exit.\n\n## Build\n\n7. Branch: fix/<short-slug> or feat/<short-slug> from master.\n8. Smallest diff that satisfies the issue. Match existing patterns.\n9. Add/update tests for behavior changes.\n10. Run: dart run build_runner build --delete-conflicting-outputs (if drift touched), flutter analyze, flutter test — all must pass.\n\n## Ship PR (do NOT use Open pull request tool)\n\ngit push -u origin HEAD\ngh pr create --repo tienan92it/mindb --base master --head <branch> --title \"<concise title> (Fixes #<N>)\" --body-file <filled PR template with Fixes #<N>, explore link, QA checklist checked>\n\nIf gh pr create fails, print compare URL and stop.\n\n## Issue hygiene\n\ngh issue edit <N> --repo tienan92it/mindb --remove-label planned --add-label building\ngh issue comment <N> --repo tienan92it/mindb --body \"Implementation PR: <PR URL>\"\n\n## Auto-ship (optional)\n\nIf the change is low-risk (bug fix, no schema/migration, no new deps): gh pr edit <PR> --add-label auto-ship\nOtherwise leave PR open for human review.\n\n## Do NOT\n\n- Use the Open pull request tool.\n- Implement more than one issue per run.\n- Expand scope beyond the issue + brief.\n- Merge without CI (auto-ship label lets GitHub Actions merge when green).\n\n## Output\n\nIssue number, branch name, PR URL, analyze/test result summary."
+  }
+}
