@@ -204,7 +204,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: mono.copyWith(color: ConnectionsScreen.muted, fontSize: 12),
             ),
             value: _readOnly,
-            activeColor: ConnectionsScreen.accent,
+            thumbColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
+                return ConnectionsScreen.accent;
+              }
+              return null;
+            }),
             onChanged: (value) => setState(() => _readOnly = value),
           ),
           ListTile(

@@ -162,7 +162,12 @@ class _ConnectionFormScreenState extends ConsumerState<ConnectionFormScreen> {
             SwitchListTile(
               title: Text('Use SSL', style: mono),
               value: _useSsl,
-              activeColor: ConnectionsScreen.accent,
+              thumbColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return ConnectionsScreen.accent;
+                }
+                return null;
+              }),
               onChanged: (value) => setState(() => _useSsl = value),
             ),
             if (_testMessage != null)
