@@ -21,9 +21,11 @@ If any fail: defer and log in `aidlc-docs/decisions.md`. Do not implement.
 
 ## Workflow
 
-Read `aidlc-docs/product-workflow.md`. Stages: explore → plan → build → QA → review → release → announce.
+Read `aidlc-docs/product-workflow.md`. Roles: Business Explorer → Product Planner → Technical Analysis → Dev → Code Reviewer → Deliver.
 
+- Business scan: `aidlc-docs/explore/`
 - Explore briefs: `aidlc-docs/explore/TEMPLATE.md`
+- Tech plans: `aidlc-docs/plan/TEMPLATE.md`
 - QA smoke: `aidlc-docs/qa-smoke.md`
 - Non-goals: `aidlc-docs/business-model.md`
 

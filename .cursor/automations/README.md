@@ -1,68 +1,84 @@
-# Cursor Automations
+# Cursor Automations — product team roles
 
-Workflow drafts for the mindb product loop. Confirm in Cursor UI before enabling.
+Six role-based automations + release webhook. **Open pull request tool: OFF** for all — use `git push` + `gh pr create`.
 
-Cursor Automations has **Open pull request** for GitHub PRs. There is no separate “GitHub issues” tool — issues and PRs are created via **`gh`** in the agent prompt (terminal). **Turn Open pull request OFF** for explore and build automations.
+## Pipeline (ICT)
 
-## Full loop
+| Time | Role | Automation | Output |
+|------|------|------------|--------|
+| 09:00 | **Business Explorer** | `business-explorer.workflow.json` | Business scan PR + `[business]` issue |
+| 09:30 | **Product Planner** | `product-planner.workflow.json` | Scored brief PR + `planned` issue if ≥7 |
+| 10:00 | **Technical Analysis** | `technical-analysis.workflow.json` | Tech plan PR + `tech-reviewed` on issue |
+| 11:00 | **Dev** | `dev-implement.workflow.json` | Code PR (`building`) |
+| 11:45, 14:00 | **Code Reviewer** | `code-reviewer.workflow.json` | Fix loop → `ready-ship` on PR |
+| 15:00, 15:30 | **Deliver Ship** | `deliver-ship.workflow.json` | Merge `ready-ship` when CI green |
+| On tag `v*.*.*` | **Deliver Announce** | `release-announce.workflow.json` | Landing changelog PR (webhook) |
 
-| Time (ICT) | Automation | Output |
-|------------|------------|--------|
-| 09:00 | **Daily Explore** | Brief PR + GitHub issue (`planned` if score ≥ 7) |
-| 10:30 | **Daily Build** | Code PR for oldest `planned` issue (+ optional auto-ship) |
-| On tag | **Release Announce** (webhook) | Landing changelog PR |
+Adjust cron in Cursor UI if needed (you set Dev to 11:00 = `0 4 * * *` UTC).
 
-Merge explore brief PRs when convenient (docs-only). Build reads the **issue** body; brief on `master` is nice-to-have.
+## Label flow
 
-## Prerequisites (all automations)
-
-1. [cursor.com/settings](https://cursor.com/settings) → **GitHub** → connect **tienan92it** with access to **`tienan92it/mindb`** (Issues + Pull requests + Contents: read/write).
-2. [cursor.com/dashboard/cloud-agents](https://cursor.com/dashboard/cloud-agents) → **Secrets** → **`GH_TOKEN`** (PAT with `repo` or issues + pull_requests + contents on this repo).
-3. GitHub labels: `explore`, `planned`, `building`, `shipped`, `bug`, `release`, `auto-ship` (PR label for auto-merge when CI green).
-
-Create missing labels:
-
-```bash
-gh label create building --repo tienan92it/mindb --description "Implementation in progress" --color "FBCA04" 2>/dev/null || true
-gh label create shipped --repo tienan92it/mindb --description "Merged to master" --color "0E8A16" 2>/dev/null || true
-gh label create auto-ship --repo tienan92it/mindb --description "Merge when CI green (.github/workflows/auto-ship.yml)" --color "5319E7" 2>/dev/null || true
+```
+explore → planned → tech-reviewed → building → ready-ship (PR) → shipped (issue closed)
 ```
 
-## 1. Daily Explore (09:00 ICT)
+| Label | Set by |
+|-------|--------|
+| `explore` | Business Explorer / Product Planner |
+| `planned` | Product Planner (score ≥7) |
+| `tech-reviewed` | Technical Analysis |
+| `building` | Dev (PR + issue) |
+| `ready-ship` | Code Reviewer (PR label) |
+| `in-review` | Code Reviewer (issue, optional) |
+| `shipped` | Deliver / auto-ship.yml |
 
-**Schedule:** `0 2 * * *` UTC  
-**Does:** Scores ≤3 ideas, brief PR, GitHub issue. **No product code.**
+Create labels:
 
-**Tools:** Open pull request **OFF**, Memories optional ON.
+```bash
+gh label create tech-reviewed --repo tienan92it/mindb --description "Tech plan approved for dev" --color "006B75" 2>/dev/null || true
+gh label create in-review --repo tienan92it/mindb --description "In code review" --color "D4C5F9" 2>/dev/null || true
+gh label create ready-ship --repo tienan92it/mindb --description "Approved; merge when CI green" --color "5319E7" 2>/dev/null || true
+```
 
-**Agent Instructions:** copy from `daily-explore.workflow.json` → `prompt` field.
+## Prerequisites
 
-## 2. Daily Build (10:30 ICT)
+1. GitHub integration: `tienan92it/mindb` — Issues, PRs, Contents write.
+2. Cloud secret **`GH_TOKEN`** (PAT with `repo` scope).
+3. `.github/workflows/auto-ship.yml` merges `ready-ship` PRs on CI success (backup to Deliver Ship cron).
 
-**Schedule:** `30 3 * * *` UTC (90 min after explore)  
-**Does:** Implements **one** oldest open `planned` issue; opens code PR; optional `auto-ship` label.
+## Setup each automation
 
-**Tools:** Open pull request **OFF**, Memories optional ON.
+1. [cursor.com/automations/new](https://cursor.com/automations/new)
+2. Name + schedule from table above
+3. Repo `tienan92it/mindb`, branch `master`
+4. **Agent Instructions:** copy `prompt` field from matching `.workflow.json`
+5. Tools: Open pull request **OFF**, Memories ON for explore/plan/dev/review roles
 
-**Agent Instructions:** copy from `daily-build.workflow.json` → `prompt` field.
+## Deliver (two automations)
 
-**Manual trigger:** Run now to implement issue #2 (Anthropic tool-use fix) if still `planned`.
+### Ship — `deliver-ship.workflow.json`
 
-**Human review:** PRs without `auto-ship` wait for you to merge. PRs with `auto-ship` merge via `.github/workflows/auto-ship.yml` when CI passes.
+Scheduled merge of Code Reviewer–approved PRs.
 
-## 3. Release Announce (webhook)
+### Announce — `release-announce.workflow.json`
 
-**Trigger:** Webhook from `.github/workflows/release.yml` on tag `v*.*.*`  
-**Does:** PR updating `docs/index.html` changelog.
+1. Trigger: **Webhook** (from `.github/workflows/release.yml` on tag push)
+2. Secrets on GitHub repo: `CURSOR_ANNOUNCE_WEBHOOK_URL`, `CURSOR_ANNOUNCE_WEBHOOK_KEY`
 
-**Tools:** Open pull request **OFF** (use `gh pr create` in prompt, same as explore/build).
+## Legacy
+
+`daily-explore.workflow.json` and `daily-build.workflow.json` are superseded by the role pipeline — disable and delete those automations in Cursor UI.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `daily-explore.workflow.json` | Product explorer — brief + issue |
-| `daily-build.workflow.json` | Dev team — implement planned issue |
-| `release-announce.workflow.json` | Landing changelog after release |
+| File | Role |
+|------|------|
+| `business-explorer.workflow.json` | Business Explorer |
+| `product-planner.workflow.json` | Product Planner |
+| `technical-analysis.workflow.json` | Technical Analysis |
+| `dev-implement.workflow.json` | Dev |
+| `code-reviewer.workflow.json` | Code Reviewer |
+| `deliver-ship.workflow.json` | Deliver Ship |
+| `release-announce.workflow.json` | Deliver Announce |
 
-Full operating model: `aidlc-docs/product-workflow.md`
+Docs: `aidlc-docs/product-workflow.md`, plans in `aidlc-docs/plan/`.

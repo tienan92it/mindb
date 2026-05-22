@@ -1,21 +1,24 @@
 # Product workflow
 
-Professional loop for mindb: explore → plan → build → QA → review → release → announce.
+Professional loop for mindb: **Business Explorer → Product Planner → Technical Analysis → Dev → Code Reviewer → Deliver**.
 
-## Cadence
+## Cadence (ICT)
 
-| When | What | Owner |
-|------|------|-------|
-| **Daily 09:00 ICT** | Explore (≤3 ideas, score, 0–1 ship candidate) | Cursor **Daily Explore** |
-| **Daily 10:30 ICT** | Build oldest `planned` issue → code PR | Cursor **Daily Build** |
-| **Every PR** | CI + review checklist | GitHub Actions |
-| **CI green + `auto-ship`** | Squash merge implementation PR | GitHub Actions `auto-ship.yml` |
-| **On release tag** | GitHub Release + announce webhook | GitHub Actions + Cursor |
-| **After tag** | Landing changelog PR | Cursor **Release Announce** |
+| When | Role | Automation |
+|------|------|------------|
+| **09:00** | Business Explorer | Business scan PR + issue |
+| **09:30** | Product Planner | Scored brief + `planned` if ≥7 |
+| **10:00** | Technical Analysis | Tech plan PR + `tech-reviewed` |
+| **11:00** | Dev | Code PR (`building`) |
+| **11:45, 14:00** | Code Reviewer | Review loop → `ready-ship` |
+| **15:00, 15:30** | Deliver Ship | Merge when CI green |
+| **On tag** | Deliver Announce | Landing changelog (webhook) |
+
+Every PR: GitHub Actions CI (analyze + test). See `.github/workflows/auto-ship.yml` for automatic merge of `ready-ship` PRs when checks pass.
 
 ## Core value filter (anti-slop)
 
-Every idea must pass **all three** before implementation:
+Every idea must pass **all three** before `planned`:
 
 1. **Job** — Shortens time-to-first-query or improves trust in answers.
 2. **Core path** — Strengthens connect → schema → ask → execute → transcript.
@@ -25,72 +28,55 @@ Reject: accounts, sync, dashboards, multi-DB, hosted AI, plugin ecosystems. See 
 
 ## Stages
 
-### 1. Explore
+### 1. Business Explorer
 
-- **Cursor:** [mindb Daily Explore](../.cursor/automations/daily-explore.workflow.json) — brief PR + GitHub issue (`planned` if score ≥ 7). **No product code.**
-- **Manual:** Issue template **Explore** or file in `aidlc-docs/explore/`.
+- **Cursor:** [business-explorer.workflow.json](../.cursor/automations/business-explorer.workflow.json)
+- Output: `aidlc-docs/explore/YYYY-MM-DD-business-scan.md`, issue `[business]`
 
-### 2. Plan
+### 2. Product Planner
 
-- Trivial: skip docs (explore issue + brief is enough).
-- Multi-component: update `design.md`.
-- Material choice: append `decisions.md`.
+- **Cursor:** [product-planner.workflow.json](../.cursor/automations/product-planner.workflow.json)
+- Output: explore brief ([TEMPLATE.md](../aidlc-docs/explore/TEMPLATE.md)), `planned` if score ≥7
 
-### 3. Build
+### 3. Technical Analysis
 
-- **Cursor:** [mindb Daily Build](../.cursor/automations/daily-build.workflow.json) — picks oldest open `planned` issue, implements on `fix/*` or `feat/*`, runs analyze/test, opens PR with `Fixes #N`.
-- **Labels:** `planned` → `building` when PR opens; `shipped` + close when merged (auto-ship workflow or manual merge).
-- **Auto-ship:** low-risk PRs get label `auto-ship`; `.github/workflows/auto-ship.yml` merges when CI green. Otherwise human merges.
-- Branch from `master`. Smallest diff. Tests for behavior changes.
+- **Cursor:** [technical-analysis.workflow.json](../.cursor/automations/technical-analysis.workflow.json)
+- Output: [plan/TEMPLATE.md](../aidlc-docs/plan/TEMPLATE.md), label `tech-reviewed`
 
-### 4. QA
+### 4. Dev
 
-- CI green (`.github/workflows/ci.yml`).
-- Manual smoke (`qa-smoke.md`) for user-facing changes.
+- **Cursor:** [dev-implement.workflow.json](../.cursor/automations/dev-implement.workflow.json)
+- Requires: `planned` + `tech-reviewed`. Opens implementation PR.
 
-### 5. Review
+### 5. Code Reviewer
 
-- PR template checklist complete.
-- One approval (you or agent summary).
+- **Cursor:** [code-reviewer.workflow.json](../.cursor/automations/code-reviewer.workflow.json)
+- Loop: analyze, test, conventions → PR label `ready-ship`
 
-### 6. Release
+### 6. Deliver
+
+- **Ship:** [deliver-ship.workflow.json](../.cursor/automations/deliver-ship.workflow.json) + `auto-ship.yml`
+- **Announce:** [release-announce.workflow.json](../.cursor/automations/release-announce.workflow.json)
 
 ```bash
-# bump pubspec.yaml version
-git tag v1.0.1
-git push origin v1.0.1
+# manual release cut
+git tag v1.0.1 && git push origin v1.0.1
 ```
 
-`.github/workflows/release.yml` runs tests and creates GitHub Release.
-
-Optional secrets for announce automation:
-
-- `CURSOR_ANNOUNCE_WEBHOOK_URL`
-- `CURSOR_ANNOUNCE_WEBHOOK_KEY`
-
-### 7. Announce
-
-- **Cursor:** [mindb Release Announce](../.cursor/automations/release-announce.workflow.json) — PR updating `docs/index.html` changelog.
-- Only user-facing bullets; no roadmap slop.
-
-## GitHub labels (recommended)
-
-Create in repo settings:
+## GitHub labels
 
 | Label | Use |
 |-------|-----|
-| `explore` | Daily exploration |
-| `planned` | Approved to build (Daily Build picks these) |
-| `building` | Implementation PR open |
-| `shipped` | Merged to master |
-| `auto-ship` | PR: merge when CI green |
+| `explore` | Discovery / briefs |
+| `planned` | Approved to plan + build |
+| `tech-reviewed` | Tech plan ready |
+| `building` | Dev PR in progress |
+| `in-review` | Code review |
+| `ready-ship` | PR approved to merge |
+| `shipped` | Merged |
 | `bug` | Defect |
 | `release` | Release tracking |
 
 ## Automations setup
 
-1. Enable **Daily Explore**, **Daily Build**, and **Release Announce** — see `.cursor/automations/README.md`.
-2. Connect GitHub for `tienan92it/mindb` (Issues + Pull requests + Contents write).
-3. Cloud secret **`GH_TOKEN`** for all `gh` / git push operations.
-4. Labels: `explore`, `planned`, `building`, `shipped`, `auto-ship`, `bug`, `release`.
-5. Release webhook secrets after **Release Announce** automation.
+See [.cursor/automations/README.md](../.cursor/automations/README.md).

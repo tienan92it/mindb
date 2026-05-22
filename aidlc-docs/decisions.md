@@ -48,6 +48,16 @@
 
 **Alternatives**: Single combined explore+build prompt; always require human merge; GitHub issue webhook trigger (not available in Cursor Automations).
 
+## 2026-05-22 — Role-based automation pipeline
+
+**Context**: User wants full product team with separate Business Explorer, Product Planner, Technical Analysis, Dev, Code Reviewer, and Deliver roles.
+
+**Choice**: Six scheduled Cursor automations (09:00–15:30 ICT) + release webhook. Handoff via GitHub labels (`planned` → `tech-reviewed` → `building` → `ready-ship` → `shipped`). Code Reviewer runs twice daily for fix loops. Deliver merges `ready-ship` PRs; `auto-ship.yml` merges on CI success.
+
+**Trade-offs**: Six automations = more cloud credits and coordination; docs PRs (business, brief, plan) may stack before dev; explore brief merge not required if issue links suffice.
+
+**Alternatives**: Keep two-step explore+build; PR-triggered reviewer only (Cursor PR triggers less reliable than cron).
+
 ## 2026-05-21 — User API keys only
 
 **Context**: No hosted backend in v1.
