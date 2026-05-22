@@ -85,5 +85,6 @@ Create in repo settings:
 ## Automations setup
 
 1. Open prefill URLs in `.cursor/automations/README.md` and confirm in Cursor UI.
-2. Enable GitHub integration for `tienan92it/mindb`.
-3. Add release webhook secrets after creating **Release Announce** automation.
+2. Connect GitHub for `tienan92it/mindb` (Issues + Pull requests write).
+3. Add Cloud secret **`GH_TOKEN`** so daily explore can run `gh issue create` (see `.cursor/automations/README.md`).
+4. Add release webhook secrets after creating **Release Announce** automation.
