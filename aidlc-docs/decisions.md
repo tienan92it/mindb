@@ -28,6 +28,16 @@
 
 **Follow-ups**: Revisit when Dart >= 3.10 available.
 
+## 2026-05-21 — Product team workflow
+
+**Context**: MVP stable; need continuous explore → ship loop without slop.
+
+**Choice**: GitHub Actions (CI + release) + Cursor Automations (daily explore, release announce) + `aidlc-docs/product-workflow.md` + `.cursor/rules/product-team.mdc`.
+
+**Trade-offs**: Daily explore consumes cloud agent credits; explore PRs require human merge review.
+
+**Alternatives**: Manual weekly planning only; Linear/Jira without repo-linked briefs.
+
 ## 2026-05-21 — User API keys only
 
 **Context**: No hosted backend in v1.

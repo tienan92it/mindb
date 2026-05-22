@@ -1,0 +1,23 @@
+name: Release checklist
+description: Track a version cut and landing announcement
+title: "[release] v"
+labels: ["release"]
+body:
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Release checklist
+      options:
+        - label: All planned PRs merged to master
+        - label: `flutter analyze` and `flutter test` green on master
+        - label: Manual smoke passed (`aidlc-docs/qa-smoke.md`)
+        - label: Version bumped in `pubspec.yaml`
+        - label: Tag pushed (`v*.*.*`) — Release workflow creates GitHub Release
+        - label: Landing page changelog updated (`docs/index.html`)
+        - label: `aidlc-docs/decisions.md` updated for material changes
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Release notes (user-facing)
+      description: 1–3 bullets for landing page / GitHub Release

@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve dependencies
+        run: flutter pub get
+
+      - name: Generate Drift code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
+
+      - name: Trigger landing-page announce automation
+        env:
+          WEBHOOK_URL: ${{ secrets.CURSOR_ANNOUNCE_WEBHOOK_URL }}
+          WEBHOOK_KEY: ${{ secrets.CURSOR_ANNOUNCE_WEBHOOK_KEY }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "CURSOR_ANNOUNCE_WEBHOOK_URL not set; skip announce automation"
+            exit 0
+          fi
+          curl -sfS -X POST "$WEBHOOK_URL" \
+            -H "Authorization: Bearer $WEBHOOK_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag\":\"${GITHUB_REF_NAME}\",\"repo\":\"${{ github.repository }}\",\"release_url\":\"https://github.com/${{ github.repository }}/releases/tag/${GITHUB_REF_NAME}\"}"

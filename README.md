@@ -6,6 +6,8 @@
 
 AI-powered PostgreSQL client with a terminal-like UI for iOS and desktop.
 
+**Product workflow:** [aidlc-docs/product-workflow.md](aidlc-docs/product-workflow.md) · **Landing:** [docs/](docs/) (GitHub Pages)
+
 ## Setup
 
 1. Install [Flutter](https://docs.flutter.dev/get-started/install) (stable, Dart 3.6+).
@@ -66,6 +68,12 @@ Apple blocks in-process JIT on newer iOS releases. This project uses Flutter **3
 | Upgrade Flutter (fixes debug on device) | `flutter upgrade` then `flutter run -d Genos` |
 
 Profile/release use ahead-of-time (AOT) compilation and do not hit the JIT crash.
+
+## Product workflow
+
+Daily explore, CI, release, and landing announcements are documented in [aidlc-docs/product-workflow.md](aidlc-docs/product-workflow.md).
+
+Cursor automation drafts: [.cursor/automations/](.cursor/automations/).
 
 ## Architecture
 

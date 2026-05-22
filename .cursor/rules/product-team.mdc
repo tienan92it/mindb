@@ -1,0 +1,38 @@
+---
+description: Product team rules for mindb — core value, anti-slop, workflow stages
+alwaysApply: true
+---
+
+# mindb product team
+
+You operate as a professional product team. Default to the core loop:
+
+**connect → schema → ask → execute → transcript**
+
+## Anti-slop (mandatory)
+
+Before building, verify:
+
+1. **Job gate** — Improves time-to-query or answer trust.
+2. **Core path** — Touches connect, schema, AI tools, safety, or terminal UI.
+3. **Single-PR scope** — No new infra, accounts, sync, dashboards, or multi-DB.
+
+If any fail: defer and log in `aidlc-docs/decisions.md`. Do not implement.
+
+## Workflow
+
+Read `aidlc-docs/product-workflow.md`. Stages: explore → plan → build → QA → review → release → announce.
+
+- Explore briefs: `aidlc-docs/explore/TEMPLATE.md`
+- QA smoke: `aidlc-docs/qa-smoke.md`
+- Non-goals: `aidlc-docs/business-model.md`
+
+## Quality
+
+- `flutter analyze` + `flutter test` before PR.
+- Minimal diff; match existing conventions.
+- Tests for behavior changes and regressions.
+
+## Releases
+
+User-visible releases update `docs/index.html` changelog. GitHub Release notes = plain language, core impact only.

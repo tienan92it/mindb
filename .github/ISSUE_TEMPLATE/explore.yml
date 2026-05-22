@@ -1,0 +1,67 @@
+name: Explore
+description: Daily or ad-hoc feature exploration (core value only)
+title: "[explore] "
+labels: ["explore"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use for scored feature ideas. See `aidlc-docs/explore/TEMPLATE.md`.
+        Ship only if total score ≥ 7/10 and all anti-slop gates pass.
+
+  - type: textarea
+    id: job
+    attributes:
+      label: Job to be done
+      description: One sentence — what user problem does this solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: success_metric
+    attributes:
+      label: Success metric
+      description: Measurable outcome (time, accuracy, error rate, etc.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: In / Out
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: anti_slop
+    attributes:
+      label: Anti-slop gates
+      options:
+        - label: Job gate — shortens time-to-query or improves answer trust
+          required: true
+        - label: Core path — touches connect, schema, ask, execute, or transcript
+          required: true
+        - label: Single-PR scope — no new infra or platform features
+          required: true
+
+  - type: textarea
+    id: scores
+    attributes:
+      label: Score (0–2 each, max 10)
+      description: |
+        Connection reliability / Schema+AI accuracy / Terminal UX / Safety / Settings ergonomics
+      placeholder: "2 + 2 + 1 + 2 + 1 = 8"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: decision
+    attributes:
+      label: Decision
+      options:
+        - Ship → create implementation issue
+        - Defer → log in decisions.md
+        - Kill — does not fit core value
+    validations:
+      required: true

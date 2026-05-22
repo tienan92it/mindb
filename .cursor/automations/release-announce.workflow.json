@@ -1,0 +1,17 @@
+{
+  "name": "mindb Release Announce",
+  "description": "After a release tag, update docs/index.html changelog and open PR.",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "webhook"
+      }
+    ],
+    "gitConfig": {
+      "repository": "https://github.com/tienan92it/mindb",
+      "branch": "master"
+    },
+    "memoryEnabled": false,
+    "prompt": "A mindb release was published. Webhook payload includes `tag`, `repo`, and `release_url`.\n\n## Task\n\n1. Fetch GitHub Release notes for the tag from the payload.\n2. Update `docs/index.html`: prepend a new entry in `#changelog` with `<time datetime=\"YYYY-MM-DD\">` and 1–2 user-facing bullets (no implementation jargon).\n3. Match existing landing tone: minimal, terminal-calm, teal/dark brand.\n4. Open a PR branch `release/announce-<tag>` with only `docs/index.html` (and `docs/styles.css` if needed).\n\n## Rules\n\n- User language only.\n- No roadmap or speculative features.\n- If release notes are empty, summarize from commits since previous tag.\n\nPR title: `docs: announce <tag> on landing page`"
+  }
+}
