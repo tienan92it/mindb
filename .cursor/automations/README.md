@@ -20,12 +20,14 @@ Cursor Automations has **Open pull request** for GitHub PRs. There is no separat
 2. Import settings from `daily-explore.workflow.json` (schedule, repo, prompt).
 3. Paste the **Agent Instructions** from the `prompt` field in that JSON (or use the prefill URL from `build_automation_prefill_url`).
 4. Enable tools:
-   - **Open pull request** — required (brief PR)
+   - **Open pull request** — OFF for Daily Explore (use `gh pr create` in the prompt instead; the Open PR tool expects a `cursor/*` session branch and fails on `explore/*`)
    - **Memories** — optional (on by default in JSON)
 5. Repository: `tienan92it/mindb`, branch `master`.
 6. Save and enable.
 
-**Dry run:** Trigger manually once. Expect a PR on `explore/YYYY-MM-DD`, one new brief under `aidlc-docs/explore/`, and a GitHub issue labeled `explore` (plus `planned` if score ≥ 7). If issue creation fails, check `GH_TOKEN` and look for `## Manual issue fallback` in the PR body.
+**Dry run:** Trigger manually once. Expect a PR on `explore/YYYY-MM-DD`, one new brief under `aidlc-docs/explore/`, and a GitHub issue labeled `explore` (plus `planned` if score ≥ 7). Requires **`GH_TOKEN`** for `git push`, `gh pr create`, and `gh issue create`. If issue creation fails, look for `## Manual issue fallback` in the PR body.
+
+**Troubleshooting:** Error *“This branch is not pushed to the remote… Expected remote branch: cursor/…”* means the agent used the Open pull request tool instead of `gh pr create`. Turn that tool off and re-paste the prompt from `daily-explore.workflow.json`.
 
 ## 2. Release Announce (webhook)
 
