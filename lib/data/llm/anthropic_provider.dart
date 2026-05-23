@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../core/app_logger.dart';
 import '../../domain/models/models.dart';
 import '../../domain/ports/ports.dart';
+import 'anthropic_messages.dart';
 
 class AnthropicProvider implements LlmProvider {
   AnthropicProvider({
@@ -27,26 +28,9 @@ class AnthropicProvider implements LlmProvider {
   }) async {
     final systemMessages =
         messages.where((m) => m.role == 'system').map((m) => m.content).join('\n');
-    final conversation = messages.where((m) => m.role != 'system').map((message) {
-      if (message.role == 'tool') {
-        return {
-          'role': 'user',
-          'content': [
-            {
-              'type': 'tool_result',
-              'tool_use_id': 'tool_result',
-              'content': message.content,
-            },
-          ],
-        };
-      }
-      return {
-        'role': message.role == 'assistant' ? 'assistant' : 'user',
-        'content': [
-          {'type': 'text', 'text': message.content},
-        ],
-      };
-    }).toList();
+    final conversation = encodeAnthropicMessages(
+      messages.where((m) => m.role != 'system').toList(),
+    );
 
     final payload = {
       'model': model,
