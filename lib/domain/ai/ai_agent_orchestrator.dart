@@ -100,13 +100,19 @@ class AiAgentOrchestrator {
           ),
         );
 
-        final toolResult = await _executeTool(toolCall);
-        events.add(AgentToolResultEvent(toolName: toolCall.name, result: toolResult));
+        final toolOutcome = await _executeTool(toolCall);
+        events.add(
+          AgentToolResultEvent(
+            toolName: toolCall.name,
+            result: toolOutcome.formatted,
+            queryResult: toolOutcome.queryResult,
+          ),
+        );
 
         messages.add(
           ChatMessage(
             role: 'tool',
-            content: toolResult,
+            content: toolOutcome.formatted,
             toolCallId: toolCall.id,
           ),
         );
@@ -132,42 +138,71 @@ class AiAgentOrchestrator {
     }
   }
 
-  Future<String> _executeTool(LlmToolCall toolCall) async {
+  Future<({String formatted, QueryResult? queryResult})> _executeTool(
+    LlmToolCall toolCall,
+  ) async {
     switch (toolCall.name) {
       case 'get_schema':
         try {
           final schema = await _schemaService.fetchSchema();
-          return ToolResultFormatter.schema(schema.toSummary());
+          return (
+            formatted: ToolResultFormatter.schema(schema.toSummary()),
+            queryResult: null,
+          );
         } catch (e) {
-          return ToolResultFormatter.sqlError('schema fetch failed: $e');
+          return (
+            formatted: ToolResultFormatter.sqlError('schema fetch failed: $e'),
+            queryResult: null,
+          );
         }
       case 'execute_sql':
         final sql = toolCall.arguments['sql']?.toString() ?? '';
         if (sql.trim().isEmpty) {
-          return ToolResultFormatter.sqlError('sql argument is required');
+          return (
+            formatted: ToolResultFormatter.sqlError('sql argument is required'),
+            queryResult: null,
+          );
         }
         try {
           final result = await _queryExecutor.execute(sql);
-          return ToolResultFormatter.sqlResult(result);
+          return (
+            formatted: ToolResultFormatter.sqlResult(result),
+            queryResult: result,
+          );
         } catch (e) {
-          return ToolResultFormatter.sqlError(e.toString());
+          return (
+            formatted: ToolResultFormatter.sqlError(e.toString()),
+            queryResult: null,
+          );
         }
       case 'explain_sql':
         final sql = toolCall.arguments['sql']?.toString() ?? '';
         if (sql.trim().isEmpty) {
-          return ToolResultFormatter.sqlError('sql argument is required');
+          return (
+            formatted: ToolResultFormatter.sqlError('sql argument is required'),
+            queryResult: null,
+          );
         }
         try {
           final explainSql = 'EXPLAIN $sql';
           final result = await _queryExecutor.execute(explainSql);
           final lines =
               result.rows.map((row) => row.first?.toString() ?? '').toList();
-          return ToolResultFormatter.explainResult(lines);
+          return (
+            formatted: ToolResultFormatter.explainResult(lines),
+            queryResult: null,
+          );
         } catch (e) {
-          return ToolResultFormatter.sqlError('explain failed: $e');
+          return (
+            formatted: ToolResultFormatter.sqlError('explain failed: $e'),
+            queryResult: null,
+          );
         }
       default:
-        return ToolResultFormatter.sqlError('unknown tool: ${toolCall.name}');
+        return (
+          formatted: ToolResultFormatter.sqlError('unknown tool: ${toolCall.name}'),
+          queryResult: null,
+        );
     }
   }
 }
