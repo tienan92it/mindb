@@ -47,4 +47,4 @@ execute | transcript
 
 ## Tracking issue
 
-_(filled when ship issue is created)_
+https://github.com/tienan92it/mindb/issues/21
