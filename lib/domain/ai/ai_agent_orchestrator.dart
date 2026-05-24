@@ -1,7 +1,9 @@
 import '../models/models.dart';
 import '../ports/ports.dart';
 import '../query/query_executor.dart';
+import '../schema/schema_query.dart';
 import '../schema/schema_service.dart';
+import '../schema/schema_summary_formatter.dart';
 import 'agent_prompts.dart';
 import 'evidence_policy.dart';
 import 'tool_result_formatter.dart';
@@ -28,10 +30,10 @@ class AiAgentOrchestrator {
     String? sessionSummary,
   }) async {
     final events = <AgentEvent>[];
-    final schemaSummary = await _loadSchemaSummary();
+    final schemaSummary = await _loadSchemaIndex();
     final systemParts = <String>[
       mindbAgentSystemPrompt,
-      'Schema:\n$schemaSummary',
+      'Schema index:\n$schemaSummary',
       if (sessionSummary != null && sessionSummary.trim().isNotEmpty)
         'Prior conversation summary (unverified — re-query if needed):\n${sessionSummary.trim()}',
     ];
@@ -129,10 +131,10 @@ class AiAgentOrchestrator {
     );
   }
 
-  Future<String> _loadSchemaSummary() async {
+  Future<String> _loadSchemaIndex() async {
     try {
       final schema = await _schemaService.fetchSchema();
-      return schema.toSummary();
+      return SchemaSummaryFormatter.formatSystemIndex(schema);
     } catch (e) {
       return 'Schema unavailable: $e';
     }
@@ -145,8 +147,13 @@ class AiAgentOrchestrator {
       case 'get_schema':
         try {
           final schema = await _schemaService.fetchSchema();
+          final query = SchemaQuery.fromArguments(toolCall.arguments);
+          final summary = SchemaSummaryFormatter.formatForTool(
+            schema,
+            query: query,
+          );
           return (
-            formatted: ToolResultFormatter.schema(schema.toSummary()),
+            formatted: ToolResultFormatter.schema(summary),
             queryResult: null,
           );
         } catch (e) {

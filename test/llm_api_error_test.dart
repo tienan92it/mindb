@@ -4,6 +4,20 @@ import 'package:mindb/data/llm/openai_compatible_chat.dart';
 import 'package:mindb/domain/models/models.dart';
 
 void main() {
+  test('formatLlmApiError surfaces Kimi message size limit', () {
+    const body =
+        '{"error":{"type":"invalid_request_error","message":"Invalid request: total message size 4510766 exceeds limit 4194304"}}';
+
+    final message = formatLlmApiError(
+      providerLabel: 'Kimi',
+      statusCode: 400,
+      body: body,
+    );
+
+    expect(message, contains('context too large'));
+    expect(message, contains('schema index'));
+  });
+
   test('formatLlmApiError surfaces Kimi model not found', () {
     const body = '''
 {"error":{"type":"resource_not_found_error","message":"Not found the model kimi-k2-turbo-preview or Permission denied"}}

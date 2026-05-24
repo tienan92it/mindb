@@ -13,6 +13,13 @@ String formatLlmApiError({
         'Kimi limits RPM/TPM by account tier.';
   }
 
+  if (statusCode == 400 && _isMessageSizeError(detail)) {
+    return '$providerLabel context too large (400): $detail\n'
+        'This database schema or conversation exceeds the provider message limit. '
+        'mindb now sends a compact schema index — retry your question, or ask about a specific schema/table. '
+        'For very large sessions, start a new session.';
+  }
+
   if (statusCode == 400 && _isReasoningContentError(detail)) {
     return '$providerLabel tool-call error (400): $detail\n'
         'Try moonshot-v1-8k in Settings, or update mindb to the latest build.';
@@ -30,6 +37,13 @@ String formatLlmApiError({
 
 bool _isReasoningContentError(String detail) {
   return detail.toLowerCase().contains('reasoning_content');
+}
+
+bool _isMessageSizeError(String detail) {
+  final lower = detail.toLowerCase();
+  return lower.contains('message size') ||
+      lower.contains('exceeds limit') ||
+      lower.contains('context length');
 }
 
 bool _isModelNotFound(String detail) {

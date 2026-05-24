@@ -4,10 +4,25 @@ const mindbLlmTools = <LlmToolDefinition>[
   LlmToolDefinition(
     name: 'get_schema',
     description:
-        'Fetch the live PostgreSQL schema (tables, columns). Required before referencing structure. Do not assume tables exist without calling this.',
+        'Fetch PostgreSQL schema. On large databases, pass schema/table/search to get column details for a subset. Unfiltered calls return a table index when full details would exceed context limits.',
     parameters: {
       'type': 'object',
-      'properties': {},
+      'properties': {
+        'schema': {
+          'type': 'string',
+          'description': 'PostgreSQL schema name (e.g. public).',
+        },
+        'table': {
+          'type': 'string',
+          'description':
+              'Table name, optionally schema-qualified (e.g. users or public.users).',
+        },
+        'search': {
+          'type': 'string',
+          'description':
+              'Case-insensitive substring filter on qualified table names.',
+        },
+      },
     },
   ),
   LlmToolDefinition(

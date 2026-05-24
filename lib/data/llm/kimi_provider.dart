@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../../domain/models/models.dart';
 import '../../domain/ports/ports.dart';
 import 'kimi_thinking_policy.dart';
+import 'llm_context_budget.dart';
 import 'openai_compatible_chat.dart';
 
 /// Kimi (Moonshot AI) — OpenAI-compatible chat completions API.
@@ -40,6 +41,7 @@ class KimiProvider implements LlmProvider {
       tools: tools,
       providerLabel: 'Kimi',
       maxCompletionTokens: 16384,
+      maxMessageBytes: LlmContextBudget.kimiSafeMessageBytes,
       extraPayload: KimiThinkingPolicy.requestExtras(model),
       kimiThinkingCompat: KimiThinkingPolicy.shouldEncodeReasoningContent(model),
     );

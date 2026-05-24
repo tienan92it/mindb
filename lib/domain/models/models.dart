@@ -314,4 +314,20 @@ class ChatMessage {
   final String? toolCallId;
   final List<LlmToolCall>? toolCalls;
   final String? reasoningContent;
+
+  ChatMessage copyWith({
+    String? role,
+    String? content,
+    String? toolCallId,
+    List<LlmToolCall>? toolCalls,
+    String? reasoningContent,
+  }) {
+    return ChatMessage(
+      role: role ?? this.role,
+      content: content ?? this.content,
+      toolCallId: toolCallId ?? this.toolCallId,
+      toolCalls: toolCalls ?? this.toolCalls,
+      reasoningContent: reasoningContent ?? this.reasoningContent,
+    );
+  }
 }

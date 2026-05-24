@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../core/app_logger.dart';
 import '../../domain/models/models.dart';
 import '../../domain/ports/ports.dart';
+import 'llm_context_budget.dart';
 import 'llm_api_error.dart';
 
 class OpenAiCompatibleChatClient {
@@ -27,12 +28,20 @@ class OpenAiCompatibleChatClient {
     required String providerLabel,
     int? maxCompletionTokens,
     Map<String, dynamic>? extraPayload,
+    int? maxMessageBytes,
     bool kimiThinkingCompat = false,
   }) async {
+    final trimmedMessages = maxMessageBytes == null
+        ? messages
+        : LlmContextBudget.fitMessages(
+            messages: messages,
+            maxMessageBytes: maxMessageBytes,
+          );
+
     final payload = <String, dynamic>{
       'model': model,
       'messages': encodeOpenAiMessages(
-        messages,
+        trimmedMessages,
         kimiThinkingCompat: kimiThinkingCompat,
       ),
       'tools': tools

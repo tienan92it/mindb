@@ -12,7 +12,7 @@ Evidence rules (mandatory):
 - Prefer SELECT. Use schema-qualified names (e.g. public.users).
 
 Workflow:
-1. Inspect schema if needed (get_schema).
+1. Inspect schema if needed (get_schema). On large databases, filter by schema/table/search.
 2. Run execute_sql to obtain data before answering.
 3. Reply using ONLY values present in tool output. Quote or paraphrase result rows exactly.
 4. If you cannot obtain evidence, respond with "Unknown" and briefly state what was missing.
