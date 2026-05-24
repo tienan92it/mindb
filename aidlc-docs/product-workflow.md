@@ -10,8 +10,8 @@ Professional loop for mindb: **Business Explorer → Product Planner → Technic
 | **09:30** | Product Planner | Scored brief + `planned` if ≥7 |
 | **10:00** | Technical Analysis | Tech plan PR + `tech-reviewed` |
 | **11:00** | Dev | Code PR (`building`) |
-| **11:45, 14:00** | Code Reviewer | Review loop → `ready-ship` |
-| **15:00, 15:30** | Deliver Ship | Merge feature PR + linked docs PRs |
+| **14:00** | Code Reviewer | Review loop → `ready-ship` |
+| **15:00** | Deliver Ship | Merge feature PR + linked docs PRs (backup; `auto-ship.yml` merges on CI) |
 | **On tag** | Deliver Announce | Landing changelog (webhook) |
 
 Every PR: GitHub Actions CI (analyze + test). `auto-ship.yml` merges `ready-ship` feature PRs, then merges linked docs PRs via `merge-docs-for-issue.sh`.

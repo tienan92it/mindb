@@ -2,10 +2,7 @@
   "name": "mindb Deliver Ship",
   "description": "Deliver role: merge ready-ship PRs when CI green, close issues, merge linked docs PRs.",
   "workflow": {
-    "triggers": [
-      { "type": "schedule", "cron": "0 8 * * *" },
-      { "type": "schedule", "cron": "30 8 * * *" }
-    ],
+    "triggers": [{ "type": "schedule", "cron": "0 8 * * *" }],
     "gitConfig": {
       "repository": "https://github.com/tienan92it/mindb",
       "branch": "master"

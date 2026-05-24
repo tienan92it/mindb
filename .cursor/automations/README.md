@@ -10,11 +10,13 @@ Six role-based automations + release webhook. **Open pull request tool: OFF** fo
 | 09:30 | **Product Planner** | `product-planner.workflow.json` | Scored brief PR + `planned` issue if ≥7 |
 | 10:00 | **Technical Analysis** | `technical-analysis.workflow.json` | Tech plan PR + `tech-reviewed` on issue |
 | 11:00 | **Dev** | `dev-implement.workflow.json` | Code PR (`building`) |
-| 11:45, 14:00 | **Code Reviewer** | `code-reviewer.workflow.json` | Fix loop → `ready-ship` on PR |
-| 15:00, 15:30 | **Deliver Ship** | `deliver-ship.workflow.json` | Merge feature PR + **linked docs PRs** |
+| 14:00 | **Code Reviewer** | `code-reviewer.workflow.json` | Fix loop → `ready-ship` on PR |
+| 15:00 | **Deliver Ship** | `deliver-ship.workflow.json` | Merge feature PR + linked docs PRs |
 | On tag `v*.*.*` | **Deliver Announce** | `release-announce.workflow.json` | Landing changelog PR (webhook) |
 
 Adjust cron in Cursor UI if needed (you set Dev to 11:00 = `0 4 * * *` UTC).
+
+**Cursor limit:** one schedule per automation. If the JSON had two crons, only the first was used — each role now has a single cron. For a second Code Reviewer pass, duplicate the automation with a different name/time or use **Run now**. Deliver also runs via `auto-ship.yml` when CI finishes (no need to wait for 15:00).
 
 ## Label flow
 

@@ -2,10 +2,7 @@
   "name": "mindb Code Reviewer",
   "description": "Review role: loop on building PRs until analyze, test, and standards pass — then ready-ship.",
   "workflow": {
-    "triggers": [
-      { "type": "schedule", "cron": "45 4 * * *" },
-      { "type": "schedule", "cron": "0 7 * * *" }
-    ],
+    "triggers": [{ "type": "schedule", "cron": "0 7 * * *" }],
     "gitConfig": {
       "repository": "https://github.com/tienan92it/mindb",
       "branch": "master"
