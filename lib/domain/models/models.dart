@@ -268,10 +268,12 @@ class AgentToolResultEvent extends AgentEvent {
   const AgentToolResultEvent({
     required this.toolName,
     required this.result,
+    this.queryResult,
   });
 
   final String toolName;
   final String result;
+  final QueryResult? queryResult;
 }
 
 class AgentDoneEvent extends AgentEvent {

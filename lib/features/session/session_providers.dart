@@ -22,6 +22,14 @@ import '../../domain/session/session_context_builder.dart';
 import '../connections/connections_providers.dart';
 import 'session_error_mapper.dart';
 
+/// Maps agent tool results to transcript lines (parity with direct `sql:` path).
+TranscriptLine transcriptLineForAgentToolResult(AgentToolResultEvent event) {
+  if (event.toolName == 'execute_sql' && event.queryResult != null) {
+    return ResultLine(event.queryResult!);
+  }
+  return SystemLine(event.result);
+}
+
 final sessionContextRepositoryProvider = Provider<SessionContextRepository>((ref) {
   return SessionContextRepository(ref.watch(appDatabaseProvider));
 });
@@ -277,8 +285,8 @@ class SessionController extends StateNotifier<SessionState> {
         switch (event) {
           case AgentToolCallEvent(:final toolName):
             newLines.add(SystemLine('tool → $toolName'));
-          case AgentToolResultEvent(:final result):
-            newLines.add(SystemLine(result));
+          case AgentToolResultEvent event:
+            newLines.add(transcriptLineForAgentToolResult(event));
           case AgentErrorEvent(:final message):
             newLines.add(ErrorLine(message));
           case AgentTextEvent():
