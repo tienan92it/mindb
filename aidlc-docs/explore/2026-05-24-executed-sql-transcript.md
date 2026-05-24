@@ -41,7 +41,7 @@ execute | transcript
 
 ## Notes
 
-- Business scan opportunity #1 (refresh): [2026-05-24-business-scan.md](./2026-05-24-business-scan.md) (PR [#18](https://github.com/tienan92it/mindb/pull/18)).
+- Morning scan opportunity #3; in pipeline — not re-scored in refresh scan: [2026-05-24-business-scan.md](./2026-05-24-business-scan.md) (PR [#11](https://github.com/tienan92it/mindb/pull/11) merged; refresh [#18](https://github.com/tienan92it/mindb/pull/18)).
 - `session_providers.dart` still adds `SystemLine('tool → execute_sql')` without statement body.
 - Row-cap notice may bundle if single-PR scope allows.
 

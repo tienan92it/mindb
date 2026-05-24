@@ -1,6 +1,6 @@
-# Daily explore — 2026-05-24 (refresh scan)
+# Daily explore — 2026-05-24
 
-Planner pass on business scan PR [#18](https://github.com/tienan92it/mindb/pull/18). Skipped pipeline items: agent tables ([#14](https://github.com/tienan92it/mindb/issues/14) shipped), onboarding ([#15](https://github.com/tienan92it/mindb/pull/15) / [#8](https://github.com/tienan92it/mindb/issues/8)), executed SQL ([#21](https://github.com/tienan92it/mindb/issues/21) `planned` + `tech-reviewed`).
+Planner pass on business scan PR [#18](https://github.com/tienan92it/mindb/pull/18) / issue [#25](https://github.com/tienan92it/mindb/issues/25). Skipped pipeline items: agent tables ([#14](https://github.com/tienan92it/mindb/issues/14) shipped), onboarding ([#8](https://github.com/tienan92it/mindb/issues/8) shipped), executed SQL ([#21](https://github.com/tienan92it/mindb/issues/21) `planned` + `tech-reviewed`).
 
 ## Top 3 scored (net-new)
 
