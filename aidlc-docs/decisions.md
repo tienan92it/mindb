@@ -48,6 +48,14 @@
 
 **Alternatives**: Single combined explore+build prompt; always require human merge; GitHub issue webhook trigger (not available in Cursor Automations).
 
+## 2026-05-24 — Merge docs PRs on ship
+
+**Context**: Business scan, brief, and tech plan PRs accumulated open while only feature PRs merged via Deliver.
+
+**Choice**: Label docs PRs `docs`; after feature merge run `.github/scripts/merge-docs-for-issue.sh` from Deliver Ship prompt and `auto-ship.yml`. Product Planner links all doc PR URLs on the ship issue.
+
+**Trade-offs**: Stale docs PRs from already-shipped issues need one-time manual merge; business scan PRs rely on ship issue comments for URLs.
+
 ## 2026-05-22 — Role-based automation pipeline
 
 **Context**: User wants full product team with separate Business Explorer, Product Planner, Technical Analysis, Dev, Code Reviewer, and Deliver roles.

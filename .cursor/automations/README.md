@@ -11,7 +11,7 @@ Six role-based automations + release webhook. **Open pull request tool: OFF** fo
 | 10:00 | **Technical Analysis** | `technical-analysis.workflow.json` | Tech plan PR + `tech-reviewed` on issue |
 | 11:00 | **Dev** | `dev-implement.workflow.json` | Code PR (`building`) |
 | 11:45, 14:00 | **Code Reviewer** | `code-reviewer.workflow.json` | Fix loop → `ready-ship` on PR |
-| 15:00, 15:30 | **Deliver Ship** | `deliver-ship.workflow.json` | Merge `ready-ship` when CI green |
+| 15:00, 15:30 | **Deliver Ship** | `deliver-ship.workflow.json` | Merge feature PR + **linked docs PRs** |
 | On tag `v*.*.*` | **Deliver Announce** | `release-announce.workflow.json` | Landing changelog PR (webhook) |
 
 Adjust cron in Cursor UI if needed (you set Dev to 11:00 = `0 4 * * *` UTC).
@@ -31,10 +31,12 @@ explore → planned → tech-reviewed → building → ready-ship (PR) → shipp
 | `ready-ship` | Code Reviewer (PR label) |
 | `in-review` | Code Reviewer (issue, optional) |
 | `shipped` | Deliver / auto-ship.yml |
+| `docs` | Docs PR (business/brief/plan); merged when ship issue closes |
 
 Create labels:
 
 ```bash
+gh label create docs --repo tienan92it/mindb --description "Docs PR; merged on ship" --color "C5DEF5" 2>/dev/null || true
 gh label create tech-reviewed --repo tienan92it/mindb --description "Tech plan approved for dev" --color "006B75" 2>/dev/null || true
 gh label create in-review --repo tienan92it/mindb --description "In code review" --color "D4C5F9" 2>/dev/null || true
 gh label create ready-ship --repo tienan92it/mindb --description "Approved; merge when CI green" --color "5319E7" 2>/dev/null || true
@@ -44,7 +46,16 @@ gh label create ready-ship --repo tienan92it/mindb --description "Approved; merg
 
 1. GitHub integration: `tienan92it/mindb` — Issues, PRs, Contents write.
 2. Cloud secret **`GH_TOKEN`** (PAT with `repo` scope).
-3. `.github/workflows/auto-ship.yml` merges `ready-ship` PRs on CI success (backup to Deliver Ship cron).
+3. `.github/workflows/auto-ship.yml` merges `ready-ship` PRs on CI success, then runs `.github/scripts/merge-docs-for-issue.sh` to merge linked explore/plan docs PRs.
+
+## Docs PR merge (on ship)
+
+Business scan, product brief, and tech plan PRs stay **open** until the feature ships:
+
+1. Explore/plan automations label PRs `docs` and link `Ship issue: #N` (Product Planner adds doc URLs to the ship issue).
+2. When Deliver merges a feature PR (`Fixes #N`), it runs `merge-docs-for-issue.sh` to squash-merge open `explore/*` and `plan/*` PRs for that issue.
+
+Re-paste updated prompts from `business-explorer`, `product-planner`, `technical-analysis`, and `deliver-ship` workflow JSON after pulling.
 
 ## Setup each automation
 

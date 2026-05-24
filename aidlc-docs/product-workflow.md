@@ -11,10 +11,14 @@ Professional loop for mindb: **Business Explorer → Product Planner → Technic
 | **10:00** | Technical Analysis | Tech plan PR + `tech-reviewed` |
 | **11:00** | Dev | Code PR (`building`) |
 | **11:45, 14:00** | Code Reviewer | Review loop → `ready-ship` |
-| **15:00, 15:30** | Deliver Ship | Merge when CI green |
+| **15:00, 15:30** | Deliver Ship | Merge feature PR + linked docs PRs |
 | **On tag** | Deliver Announce | Landing changelog (webhook) |
 
-Every PR: GitHub Actions CI (analyze + test). See `.github/workflows/auto-ship.yml` for automatic merge of `ready-ship` PRs when checks pass.
+Every PR: GitHub Actions CI (analyze + test). `auto-ship.yml` merges `ready-ship` feature PRs, then merges linked docs PRs via `merge-docs-for-issue.sh`.
+
+## Docs PRs
+
+Explore/plan PRs (`docs` label) are **not** merged at creation. They merge automatically when Deliver ships the related feature (`Fixes #N`). Ship issue body/comments must list brief, plan, and business scan PR URLs.
 
 ## Core value filter (anti-slop)
 
@@ -55,7 +59,7 @@ Reject: accounts, sync, dashboards, multi-DB, hosted AI, plugin ecosystems. See 
 
 ### 6. Deliver
 
-- **Ship:** [deliver-ship.workflow.json](../.cursor/automations/deliver-ship.workflow.json) + `auto-ship.yml`
+- **Ship:** [deliver-ship.workflow.json](../.cursor/automations/deliver-ship.workflow.json) + `auto-ship.yml` + [merge-docs-for-issue.sh](../.github/scripts/merge-docs-for-issue.sh)
 - **Announce:** [release-announce.workflow.json](../.cursor/automations/release-announce.workflow.json)
 
 ```bash
