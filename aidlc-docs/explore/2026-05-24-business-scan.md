@@ -8,12 +8,12 @@
 
 **Signals today:**
 - Business model success bar: first successful query from install in under 3 minutes; schema fetch reliability; zero credential leaks.
-- Open `explore` issues: [#6 [business] Daily scan 2026-05-23](https://github.com/tienan92it/mindb/issues/6), [#8 [explore] Time-to-first-query onboarding](https://github.com/tienan92it/mindb/issues/8) (feature merged via [#15](https://github.com/tienan92it/mindb/pull/15); Deliver pending), [#21 [explore] Show executed SQL in agent transcript](https://github.com/tienan92it/mindb/issues/21) (`planned`, `tech-reviewed` — tech plan PR [#22](https://github.com/tienan92it/mindb/pull/22) open).
-- **Shipped since morning scan (PR #11):** [#14 Agent transcript tables](https://github.com/tienan92it/mindb/issues/14); [#15 Onboarding checklist](https://github.com/tienan92it/mindb/pull/15); Kimi/large-DB context budget on master (compact schema index, filtered `get_schema`, payload trimming) — model-side only, no transcript signal when schema context is partial.
+- Open `explore` issues: [#6 [business] Daily scan 2026-05-23](https://github.com/tienan92it/mindb/issues/6), [#21 [explore] Show executed SQL in agent transcript](https://github.com/tienan92it/mindb/issues/21) (`planned`, `tech-reviewed` — tech plan PR [#22](https://github.com/tienan92it/mindb/pull/22) open), [#24 [explore] Daily digest — no ship candidates](https://github.com/tienan92it/mindb/issues/24).
+- **Shipped on master:** [#2 Anthropic multi-round tool-use](https://github.com/tienan92it/mindb/issues/2); [#8 Time-to-first-query onboarding](https://github.com/tienan92it/mindb/issues/8); [#14 Agent transcript tables](https://github.com/tienan92it/mindb/issues/14). Kimi/large-DB context budget (compact schema index, filtered `get_schema`, payload trimming) — model-side only; no transcript signal when schema context is partial.
 - **Gaps still unaddressed:** `SchemaService.clearCache()` never called after DDL; `TableResultBlock` omits row-cap footer; schema fetch failures hidden in model prompt; NL `submitPrompt` / `executeSqlDirect` `catch` still use `ErrorLine(e.toString())` while connect uses `SessionErrorMapper`.
-- Product Planner: executed-SQL brief scored 7 (defer behind tables — tables now shipped); DDL invalidation brief scored 6 (defer).
+- Product Planner: executed-SQL brief scored 7 (defer behind tables — tables now shipped); DDL invalidation brief scored 6 (defer). Evening digest (#24) found no additional ship candidates beyond in-flight #21.
 
-**Pipeline note:** Do not re-brief agent result tables (#14 shipped), onboarding (#15 merged / #8), executed SQL in transcript (#21 `planned` + `tech-reviewed`), or Anthropic tool-use (#2 shipped). Score and plan only net-new opportunities below.
+**Pipeline note:** Do not re-brief agent result tables (#14 shipped), onboarding (#8 shipped), executed SQL in transcript (#21 `planned` + `tech-reviewed`), or Anthropic tool-use (#2 shipped). Score and plan only net-new opportunities below.
 
 ---
 
@@ -46,7 +46,7 @@ Per `aidlc-docs/business-model.md` — do not brief or plan:
 | Persisted full agent transcript (tools + tables) across sessions | Sync/persistence expansion; text-only turn history is current scope. |
 | Kimi China endpoint (`api.moonshot.cn`) exposure | Regional endpoint choice, not core-path job gate. |
 | Re-brief agent result tables | Issue #14 shipped 2026-05-24. |
-| Re-brief time-to-first-query onboarding | PR #15 merged; issue #8 in Deliver pipeline. |
+| Re-brief time-to-first-query onboarding | Issue #8 shipped 2026-05-24. |
 | Re-brief executed SQL in agent transcript | Issue #21 already `planned` + `tech-reviewed`. |
 | Re-brief Anthropic multi-round tool-use | Issue #2 shipped. |
 | Re-implement Kimi 4MB / context budget plumbing | Shipped on master; user-facing gap is notice/trust, not transport. |
@@ -59,8 +59,8 @@ Per `aidlc-docs/business-model.md` — do not brief or plan:
 
 **Actions:**
 1. Score opportunities 1–5 with the 0–2 rubric (max 10) and anti-slop gates from `product-workflow.md`.
-2. Skip re-scoring shipped #14, merged onboarding (#15 / #8), in-flight executed SQL (#21), and shipped Anthropic tool-use (#2).
+2. Skip re-scoring shipped #14, #8, in-flight executed SQL (#21), and shipped Anthropic tool-use (#2).
 3. Produce explore brief from `TEMPLATE.md` only for items ≥ 7/10; add `planned` label on qualifying GitHub issues (do not add `planned` from this scan).
 4. Suggested sequencing if multiple pass gates: let #21 (executed SQL) build first; (3) row-cap notice may bundle with executed SQL if single-PR scope allows; (2) DDL cache invalidation; (1) large-DB schema partial notice; (4) schema failure visibility; (5) NL LLM error mapping — may extend `SessionErrorMapper`.
 
-**Inputs:** This file, `business-model.md`, `decisions.md`, open `explore` issues, `2026-05-24-executed-sql-transcript.md`, `2026-05-24-schema-cache-ddl-invalidation.md`, morning scan PR [#11](https://github.com/tienan92it/mindb/pull/11).
+**Inputs:** This file, `business-model.md`, `decisions.md`, open `explore` issues, `2026-05-24-executed-sql-transcript.md`, `2026-05-24-schema-cache-ddl-invalidation.md`, merged morning scan PR [#11](https://github.com/tienan92it/mindb/pull/11), digest [#24](https://github.com/tienan92it/mindb/issues/24).
