@@ -111,6 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       }
 
       ref.invalidate(appSettingsProvider);
+      ref.invalidate(onboardingReadinessProvider);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Settings saved')),

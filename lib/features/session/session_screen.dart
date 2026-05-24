@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../connections/connections_screen.dart';
 import 'llm_status_bar.dart';
+import 'session_error_mapper.dart';
 import 'session_providers.dart';
 import 'sql_input_bar.dart';
 import 'transcript_view.dart';
@@ -65,6 +67,12 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
       ),
       body: Column(
         children: [
+          if (!state.isConnected && state.error != null)
+            _ConnectErrorBanner(
+              message: state.error!,
+              action: state.errorAction,
+              connectionId: widget.connectionId,
+            ),
           Expanded(child: TranscriptView(lines: state.lines)),
           if (state.llmProvider != null && state.llmModel != null)
             LlmStatusBar(
@@ -140,6 +148,60 @@ class _SessionScreenState extends ConsumerState<SessionScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ConnectErrorBanner extends StatelessWidget {
+  const _ConnectErrorBanner({
+    required this.message,
+    required this.action,
+    required this.connectionId,
+  });
+
+  final String message;
+  final SessionRecoveryAction? action;
+  final String connectionId;
+
+  @override
+  Widget build(BuildContext context) {
+    final mono = GoogleFonts.jetBrainsMono(fontSize: 13, color: Colors.white70);
+
+    String? buttonLabel;
+    VoidCallback? onPressed;
+    switch (action) {
+      case SessionRecoveryAction.settings:
+        buttonLabel = 'Open Settings';
+        onPressed = () => context.push('/settings');
+      case SessionRecoveryAction.editConnection:
+        buttonLabel = 'Edit connection';
+        onPressed = () => context.push('/connections/$connectionId/edit');
+      case SessionRecoveryAction.none:
+      case null:
+        break;
+    }
+
+    return Material(
+      color: const Color(0xFF1A1010),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.redAccent, size: 20),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message, style: mono)),
+            if (buttonLabel != null && onPressed != null)
+              TextButton(
+                onPressed: onPressed,
+                child: Text(
+                  buttonLabel,
+                  style: mono.copyWith(color: ConnectionsScreen.accent),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

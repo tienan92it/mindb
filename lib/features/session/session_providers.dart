@@ -20,6 +20,7 @@ import '../../domain/safety/safety_policy.dart';
 import '../../domain/schema/schema_service.dart';
 import '../../domain/session/session_context_builder.dart';
 import '../connections/connections_providers.dart';
+import 'session_error_mapper.dart';
 
 final sessionContextRepositoryProvider = Provider<SessionContextRepository>((ref) {
   return SessionContextRepository(ref.watch(appDatabaseProvider));
@@ -59,6 +60,7 @@ class SessionState {
     this.llmProvider,
     this.llmModel,
     this.error,
+    this.errorAction,
     this.pendingConfirmation,
   });
 
@@ -69,6 +71,7 @@ class SessionState {
   final LlmProviderType? llmProvider;
   final String? llmModel;
   final String? error;
+  final SessionRecoveryAction? errorAction;
   final PendingConfirmation? pendingConfirmation;
 
   SessionState copyWith({
@@ -79,8 +82,10 @@ class SessionState {
     LlmProviderType? llmProvider,
     String? llmModel,
     String? error,
+    SessionRecoveryAction? errorAction,
     PendingConfirmation? pendingConfirmation,
     bool clearPendingConfirmation = false,
+    bool clearError = false,
   }) {
     return SessionState(
       lines: lines ?? this.lines,
@@ -89,7 +94,8 @@ class SessionState {
       connectionName: connectionName ?? this.connectionName,
       llmProvider: llmProvider ?? this.llmProvider,
       llmModel: llmModel ?? this.llmModel,
-      error: error,
+      error: clearError ? null : (error ?? this.error),
+      errorAction: clearError ? null : (errorAction ?? this.errorAction),
       pendingConfirmation: clearPendingConfirmation
           ? null
           : pendingConfirmation ?? this.pendingConfirmation,
@@ -120,7 +126,7 @@ class SessionController extends StateNotifier<SessionState> {
       _ref.read(sessionContextRepositoryProvider);
 
   Future<void> _connect() async {
-    state = state.copyWith(isBusy: true, error: null);
+    state = state.copyWith(isBusy: true, clearError: true);
     try {
       final profile = await _connectionRepo.getById(connectionId);
       if (profile == null) {
@@ -160,6 +166,7 @@ class SessionController extends StateNotifier<SessionState> {
       state = state.copyWith(
         isBusy: false,
         isConnected: true,
+        clearError: true,
         connectionName: profile.name,
         llmProvider: settings.llmProvider,
         llmModel: settings.llmModel,
@@ -170,11 +177,13 @@ class SessionController extends StateNotifier<SessionState> {
         ],
       );
     } catch (e) {
+      final mapped = SessionErrorMapper.map(e);
       state = state.copyWith(
         isBusy: false,
         isConnected: false,
-        error: e.toString(),
-        lines: [ErrorLine('Connection failed: $e')],
+        error: mapped.message,
+        errorAction: mapped.action,
+        lines: [ErrorLine('Connection failed: ${mapped.message}')],
       );
     }
   }

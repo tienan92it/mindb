@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../domain/models/models.dart';
 import '../session/session_providers.dart';
 import 'connections_providers.dart';
+import 'onboarding_checklist.dart';
 
 class ConnectionsScreen extends ConsumerWidget {
   const ConnectionsScreen({super.key});
@@ -17,6 +18,7 @@ class ConnectionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connectionsAsync = ref.watch(connectionsListProvider);
+    final readinessAsync = ref.watch(onboardingReadinessProvider);
 
     return Scaffold(
       backgroundColor: background,
@@ -49,21 +51,72 @@ class ConnectionsScreen extends ConsumerWidget {
         ),
         data: (connections) {
           if (connections.isEmpty) {
-            return Center(
-              child: Text(
-                'No connections yet.\nTap + to add one.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.jetBrainsMono(color: muted, height: 1.6),
+            return readinessAsync.when(
+              loading: () => const Center(
+                child: CircularProgressIndicator(color: accent),
+              ),
+              error: (error, _) => Center(
+                child: Text(
+                  'Failed to load setup status: $error',
+                  style: GoogleFonts.jetBrainsMono(color: Colors.redAccent),
+                ),
+              ),
+              data: (status) => OnboardingChecklist(
+                status: status,
+                firstConnectionId: null,
               ),
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: connections.length,
-            itemBuilder: (context, index) {
-              final connection = connections[index];
-              return _ConnectionTile(connection: connection);
+          return readinessAsync.when(
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: accent),
+            ),
+            error: (error, _) => Center(
+              child: Text(
+                'Failed to load setup status: $error',
+                style: GoogleFonts.jetBrainsMono(color: Colors.redAccent),
+              ),
+            ),
+            data: (status) {
+              final showKeyBanner =
+                  connections.isNotEmpty && !status.hasLlmKey;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (showKeyBanner)
+                    MaterialBanner(
+                      backgroundColor: const Color(0xFF141414),
+                      content: Text(
+                        'Add your LLM API key in Settings to use natural language.',
+                        style: GoogleFonts.jetBrainsMono(
+                          color: muted,
+                          fontSize: 13,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => context.push('/settings'),
+                          child: Text(
+                            'Open Settings',
+                            style: GoogleFonts.jetBrainsMono(color: accent),
+                          ),
+                        ),
+                      ],
+                    ),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: connections.length,
+                      itemBuilder: (context, index) {
+                        final connection = connections[index];
+                        return _ConnectionTile(connection: connection);
+                      },
+                    ),
+                  ),
+                ],
+              );
             },
           );
         },
@@ -124,6 +177,7 @@ class _ConnectionTile extends ConsumerWidget {
         ref.read(connectionRepositoryProvider).delete(connection.id);
         ref.read(sessionContextRepositoryProvider).delete(connection.id);
         ref.invalidate(connectionsListProvider);
+        ref.invalidate(onboardingReadinessProvider);
       },
       child: ListTile(
         onTap: () => context.push('/session/${connection.id}'),
