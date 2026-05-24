@@ -128,6 +128,7 @@ class _ConnectionFormScreenState extends ConsumerState<ConnectionFormScreen> {
             password: _passwordController.text,
           );
       ref.invalidate(connectionsListProvider);
+      ref.invalidate(onboardingReadinessProvider);
       if (mounted) context.pop();
     } finally {
       if (mounted) setState(() => _isLoading = false);
