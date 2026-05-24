@@ -43,11 +43,26 @@ The Xcode project uses **automatic signing** with team `7Y2EHDSMDJ` (personal Ap
 If install fails with a missing provisioning profile:
 
 1. Connect the iPhone and unlock/trust the Mac.
-2. Open `ios/Runner.xcworkspace` in Xcode.
+2. Open **`ios/Runner.xcworkspace`** in Xcode (not `Runner.xcodeproj`).
 3. Select the **Runner** target → **Signing & Capabilities**.
 4. Confirm **Automatically manage signing** is enabled and your personal team is selected.
-5. Build once from Xcode (`Product → Run`) so the device is registered and a profile is created.
-6. Run again from Flutter: `flutter run -d <device-id>`.
+5. **Product → Clean Build Folder**, then build once from Xcode (`Product → Run`).
+
+### `Framework 'Pods_Runner' not found`
+
+CocoaPods is out of sync with Xcode. From the project root:
+
+```bash
+flutter clean
+flutter pub get
+cd ios && rm -rf Pods Podfile.lock ~/Library/Developer/Xcode/DerivedData/*Runner* && pod install && cd ..
+```
+
+Then open **`ios/Runner.xcworkspace`** and run again. Use Flutter on device:
+
+```bash
+flutter run --profile -d Genos
+```
 
 ### iOS 26+ debug crash (JIT)
 
