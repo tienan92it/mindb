@@ -37,7 +37,7 @@ execute | transcript
 
 ## Decision
 
-**Defer** — Score 6; ship executed-SQL visibility first; bundle here if Dev confirms single-PR fit.
+**Defer** — Score 6; sequence after [#21](https://github.com/tienan92it/mindb/issues/21); bundle with executed SQL if Dev confirms single-PR fit.
 
 ## Notes
 

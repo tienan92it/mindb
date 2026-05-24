@@ -37,7 +37,7 @@ schema | ask
 
 ## Decision
 
-**Defer** — Score 6; sequence after executed-SQL visibility (ship candidate #1).
+**Defer** — Score 6; sequence after [#21](https://github.com/tienan92it/mindb/issues/21) (executed SQL) and partial-schema notice.
 
 ## Notes
 
