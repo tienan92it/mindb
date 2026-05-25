@@ -9,8 +9,8 @@
 **Signals today:**
 - Business model success bar: first successful query from install in under 3 minutes; schema fetch reliability; zero credential leaks.
 - **Shipped since 2026-05-24 scan:** [#8 time-to-first-query onboarding](https://github.com/tienan92it/mindb/issues/8), [#14 agent `execute_sql` → transcript tables](https://github.com/tienan92it/mindb/issues/14), [#2 Anthropic multi-round tool-use](https://github.com/tienan92it/mindb/issues/2).
-- **In build pipeline:** [#21 Show executed SQL in agent transcript](https://github.com/tienan92it/mindb/issues/21) (`planned`, `tech-reviewed`) — closes the remaining “what ran” gap on the NL path.
-- Open `explore` issues include duplicate `[business] Daily scan 2026-05-24` trackers (#12, #19, #23, #25) and [#24 daily digest — no ship candidates](https://github.com/tienan92it/mindb/issues/24).
+- **In build pipeline:** [#21 Show executed SQL in agent transcript](https://github.com/tienan92it/mindb/issues/21) (`tech-reviewed`, `in-review`) — closes the remaining “what ran” gap on the NL path.
+- Open `explore` issues: [#30 daily digest — no ship candidates](https://github.com/tienan92it/mindb/issues/30), duplicate `[business] Daily scan 2026-05-24` trackers (#12, #19, #23, #25), [#24 daily digest](https://github.com/tienan92it/mindb/issues/24).
 - Code review: `SchemaService.clearCache()` still unused after DDL; `SafetyPolicy.injectLimit` caps rows without transcript notice; schema fetch failures only appear inside the model system prompt (`Schema unavailable: …`), not as a user-visible transcript warning; session connect lines show LLM provider/model but not read-only mode; NL/agent failures surface raw `e.toString()` in `ErrorLine`.
 
 **Pipeline note:** Do not re-brief shipped onboarding (#8), agent result tables (#14), Anthropic tool-use (#2), or executed-SQL visibility (#21). Score and plan only net-new opportunities below.
@@ -48,7 +48,7 @@ Per `aidlc-docs/business-model.md` — do not brief or plan:
 | Re-brief time-to-first-query onboarding | Issue #8 shipped. |
 | Re-brief agent result tables | Issue #14 shipped. |
 | Re-brief Anthropic multi-round tool-use | Issue #2 shipped. |
-| Re-brief executed SQL in agent transcript | Issue #21 already `planned` + `tech-reviewed`. |
+| Re-brief executed SQL in agent transcript | Issue #21 in build (`tech-reviewed`, `in-review`). |
 
 ---
 
