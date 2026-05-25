@@ -108,6 +108,7 @@ class AiAgentOrchestrator {
             toolName: toolCall.name,
             result: toolOutcome.formatted,
             queryResult: toolOutcome.queryResult,
+            executedSql: toolOutcome.executedSql,
           ),
         );
 
@@ -140,7 +141,11 @@ class AiAgentOrchestrator {
     }
   }
 
-  Future<({String formatted, QueryResult? queryResult})> _executeTool(
+  Future<({
+    String formatted,
+    QueryResult? queryResult,
+    String? executedSql,
+  })> _executeTool(
     LlmToolCall toolCall,
   ) async {
     switch (toolCall.name) {
@@ -155,19 +160,23 @@ class AiAgentOrchestrator {
           return (
             formatted: ToolResultFormatter.schema(summary),
             queryResult: null,
+            executedSql: null,
           );
         } catch (e) {
           return (
             formatted: ToolResultFormatter.sqlError('schema fetch failed: $e'),
             queryResult: null,
+            executedSql: null,
           );
         }
       case 'execute_sql':
         final sql = toolCall.arguments['sql']?.toString() ?? '';
-        if (sql.trim().isEmpty) {
+        final trimmedSql = sql.trim();
+        if (trimmedSql.isEmpty) {
           return (
             formatted: ToolResultFormatter.sqlError('sql argument is required'),
             queryResult: null,
+            executedSql: null,
           );
         }
         try {
@@ -175,11 +184,13 @@ class AiAgentOrchestrator {
           return (
             formatted: ToolResultFormatter.sqlResult(result),
             queryResult: result,
+            executedSql: result.sql,
           );
         } catch (e) {
           return (
             formatted: ToolResultFormatter.sqlError(e.toString()),
             queryResult: null,
+            executedSql: trimmedSql,
           );
         }
       case 'explain_sql':
@@ -188,6 +199,7 @@ class AiAgentOrchestrator {
           return (
             formatted: ToolResultFormatter.sqlError('sql argument is required'),
             queryResult: null,
+            executedSql: null,
           );
         }
         try {
@@ -198,17 +210,20 @@ class AiAgentOrchestrator {
           return (
             formatted: ToolResultFormatter.explainResult(lines),
             queryResult: null,
+            executedSql: null,
           );
         } catch (e) {
           return (
             formatted: ToolResultFormatter.sqlError('explain failed: $e'),
             queryResult: null,
+            executedSql: null,
           );
         }
       default:
         return (
           formatted: ToolResultFormatter.sqlError('unknown tool: ${toolCall.name}'),
           queryResult: null,
+          executedSql: null,
         );
     }
   }

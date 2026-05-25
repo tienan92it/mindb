@@ -30,6 +30,22 @@ TranscriptLine transcriptLineForAgentToolResult(AgentToolResultEvent event) {
   return SystemLine(event.result);
 }
 
+/// Transcript lines for a tool result, including executed SQL for `execute_sql`.
+List<TranscriptLine> transcriptLinesForAgentToolResult(AgentToolResultEvent event) {
+  final lines = <TranscriptLine>[];
+  if (event.toolName == 'execute_sql') {
+    final sql = event.executedSql?.trim();
+    if (sql != null && sql.isNotEmpty) {
+      lines.add(SystemLine(sql));
+    }
+  }
+  lines.add(transcriptLineForAgentToolResult(event));
+  return lines;
+}
+
+/// Whether to show the `tool → …` call marker for this tool name.
+bool showAgentToolCallLine(String toolName) => toolName != 'execute_sql';
+
 final sessionContextRepositoryProvider = Provider<SessionContextRepository>((ref) {
   return SessionContextRepository(ref.watch(appDatabaseProvider));
 });
@@ -284,9 +300,11 @@ class SessionController extends StateNotifier<SessionState> {
       for (final event in events) {
         switch (event) {
           case AgentToolCallEvent(:final toolName):
-            newLines.add(SystemLine('tool → $toolName'));
+            if (showAgentToolCallLine(toolName)) {
+              newLines.add(SystemLine('tool → $toolName'));
+            }
           case AgentToolResultEvent event:
-            newLines.add(transcriptLineForAgentToolResult(event));
+            newLines.addAll(transcriptLinesForAgentToolResult(event));
           case AgentErrorEvent(:final message):
             newLines.add(ErrorLine(message));
           case AgentTextEvent():
