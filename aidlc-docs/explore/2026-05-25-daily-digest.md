@@ -16,6 +16,10 @@ Business scan: [2026-05-25-business-scan.md](./2026-05-25-business-scan.md) (PR 
 
 **No ship candidates ≥ 7** from this pass.
 
+## Tracking issue
+
+https://github.com/tienan92it/mindb/issues/30
+
 ## Scores — not briefed (score < 7 or lower priority)
 
 | Opportunity | Conn | Schema/AI | Terminal UX | Safety | Settings | **Total** | Decision |
