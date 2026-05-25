@@ -33,11 +33,11 @@ execute | transcript
 
 - [x] Job gate — Prevents mistaking partial tables for complete answers.
 - [x] Core path — execute → transcript clarity for agent and direct `sql:` paths.
-- [x] Single-PR scope — `ResultLine` / session UI + executor metadata; may bundle with executed-SQL ship (#21) if reviewers agree single-PR.
+- [x] Single-PR scope — `ResultLine` / session UI + executor metadata; standalone PR.
 
 ## Decision
 
-**Defer** — Score 6; agent `SELECT` tables now render (#14 shipped) but silent caps still undermine trust. Consider bundling with [#21](https://github.com/tienan92it/mindb/issues/21) build if scope stays one PR.
+**Defer** — Score 6; agent `SELECT` tables and executed SQL in transcript ([#21](https://github.com/tienan92it/mindb/issues/21) shipped) but silent row caps still make partial results look complete.
 
 ## Notes
 

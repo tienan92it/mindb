@@ -2,7 +2,7 @@
 
 Business scan: [2026-05-25-business-scan.md](./2026-05-25-business-scan.md) (PR [#26](https://github.com/tienan92it/mindb/pull/26), issue [#27](https://github.com/tienan92it/mindb/issues/27)).
 
-**Pipeline (not re-scored):** shipped #2 Anthropic tool-use, #8 onboarding, #14 agent result tables; in-flight #21 executed SQL (`planned`, `tech-reviewed`).
+**Pipeline (not re-scored):** shipped #2 Anthropic tool-use, #8 onboarding, #14 agent result tables, #21 executed SQL in transcript.
 
 ---
 
@@ -31,10 +31,10 @@ https://github.com/tienan92it/mindb/issues/30
 
 1. DDL cache invalidation — unblocks correct NL after schema changes.
 2. Schema failure visibility — reduces bad first answers on degraded introspection.
-3. Row-cap notice — may bundle with executed-SQL (#21) if single-PR scope allows.
+3. Row-cap notice — standalone after #21 shipped.
 4. LLM error mapping — independent ask-path trust win.
 5. Read-only indicator — small terminal/safety clarity.
 
 ## Rejected / skipped
 
-Per scan non-goals and `business-model.md`; re-brief blocked for #8, #14, #2, #21.
+Per scan non-goals and `business-model.md`; re-brief blocked for #8, #14, #2, #21 (shipped).
