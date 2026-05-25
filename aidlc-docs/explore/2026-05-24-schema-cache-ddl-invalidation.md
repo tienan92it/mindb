@@ -37,9 +37,9 @@ schema | ask
 
 ## Decision
 
-**Defer** — Score 6; `clearCache()` exists but is unused in production; sequence after transcript table parity (#1) and executed-SQL visibility.
+**Defer** — Score 6; sequence after [#21](https://github.com/tienan92it/mindb/issues/21) (executed SQL) and partial-schema notice.
 
 ## Notes
 
-- Business scan opportunity #2: [2026-05-24-business-scan.md](./2026-05-24-business-scan.md) (PR [#11](https://github.com/tienan92it/mindb/pull/11)).
-- Same theme deferred 2026-05-22 and 2026-05-23; gap unchanged per scan.
+- Business scan opportunity #2 (refresh): [2026-05-24-business-scan.md](./2026-05-24-business-scan.md) (PR [#18](https://github.com/tienan92it/mindb/pull/18)).
+- `clearCache()` exists but is unused in production.
