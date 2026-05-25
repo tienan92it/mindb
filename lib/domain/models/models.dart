@@ -269,11 +269,13 @@ class AgentToolResultEvent extends AgentEvent {
     required this.toolName,
     required this.result,
     this.queryResult,
+    this.executedSql,
   });
 
   final String toolName;
   final String result;
   final QueryResult? queryResult;
+  final String? executedSql;
 }
 
 class AgentDoneEvent extends AgentEvent {
