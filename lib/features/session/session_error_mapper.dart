@@ -19,6 +19,33 @@ class SessionErrorMapping {
 
 /// Maps connect-time exceptions to short copy and recovery CTAs.
 abstract final class SessionErrorMapper {
+  static SessionErrorMapping mapSchemaIntrospectionFailure(Object error) {
+    final text = error.toString();
+
+    if (error is StateError) {
+      final msg = error.message;
+      if (msg.contains('Not connected')) {
+        return const SessionErrorMapping(
+          message: 'Not connected to the database.',
+        );
+      }
+    }
+
+    final lower = text.toLowerCase();
+    if (lower.contains('permission denied') ||
+        lower.contains('denied') ||
+        lower.contains('42501') ||
+        lower.contains('information_schema')) {
+      return const SessionErrorMapping(
+        message:
+            'Cannot read database schema (permission denied). '
+            'Natural-language answers may not match your tables.',
+      );
+    }
+
+    return SessionErrorMapping(message: _shorten(text));
+  }
+
   static SessionErrorMapping map(Object error) {
     final text = error.toString();
 

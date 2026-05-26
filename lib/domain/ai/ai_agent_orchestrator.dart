@@ -4,6 +4,7 @@ import '../query/query_executor.dart';
 import '../schema/schema_query.dart';
 import '../schema/schema_service.dart';
 import '../schema/schema_summary_formatter.dart';
+import '../../features/session/session_error_mapper.dart';
 import 'agent_prompts.dart';
 import 'evidence_policy.dart';
 import 'tool_result_formatter.dart';
@@ -30,7 +31,24 @@ class AiAgentOrchestrator {
     String? sessionSummary,
   }) async {
     final events = <AgentEvent>[];
-    final schemaSummary = await _loadSchemaIndex();
+    final indexLoad = await _loadSchemaIndex();
+    final schemaSummary = indexLoad.summary;
+    String? lastSchemaWarning;
+
+    void emitSchemaDegraded(Object error) {
+      final message =
+          SessionErrorMapper.mapSchemaIntrospectionFailure(error).message;
+      if (lastSchemaWarning == message) {
+        return;
+      }
+      lastSchemaWarning = message;
+      events.add(AgentSchemaDegradedEvent(message));
+    }
+
+    if (indexLoad.error != null) {
+      emitSchemaDegraded(indexLoad.error!);
+    }
+
     final systemParts = <String>[
       mindbAgentSystemPrompt,
       'Schema index:\n$schemaSummary',
@@ -112,6 +130,10 @@ class AiAgentOrchestrator {
           ),
         );
 
+        if (toolOutcome.schemaError != null) {
+          emitSchemaDegraded(toolOutcome.schemaError!);
+        }
+
         messages.add(
           ChatMessage(
             role: 'tool',
@@ -132,12 +154,15 @@ class AiAgentOrchestrator {
     );
   }
 
-  Future<String> _loadSchemaIndex() async {
+  Future<({String summary, Object? error})> _loadSchemaIndex() async {
     try {
       final schema = await _schemaService.fetchSchema();
-      return SchemaSummaryFormatter.formatSystemIndex(schema);
+      return (
+        summary: SchemaSummaryFormatter.formatSystemIndex(schema),
+        error: null,
+      );
     } catch (e) {
-      return 'Schema unavailable: $e';
+      return (summary: 'Schema unavailable: $e', error: e);
     }
   }
 
@@ -145,6 +170,7 @@ class AiAgentOrchestrator {
     String formatted,
     QueryResult? queryResult,
     String? executedSql,
+    Object? schemaError,
   })> _executeTool(
     LlmToolCall toolCall,
   ) async {
@@ -161,12 +187,16 @@ class AiAgentOrchestrator {
             formatted: ToolResultFormatter.schema(summary),
             queryResult: null,
             executedSql: null,
+            schemaError: null,
           );
         } catch (e) {
+          final mapped =
+              SessionErrorMapper.mapSchemaIntrospectionFailure(e).message;
           return (
-            formatted: ToolResultFormatter.sqlError('schema fetch failed: $e'),
+            formatted: ToolResultFormatter.schemaError(mapped),
             queryResult: null,
             executedSql: null,
+            schemaError: e,
           );
         }
       case 'execute_sql':
@@ -177,6 +207,7 @@ class AiAgentOrchestrator {
             formatted: ToolResultFormatter.sqlError('sql argument is required'),
             queryResult: null,
             executedSql: null,
+            schemaError: null,
           );
         }
         try {
@@ -185,12 +216,14 @@ class AiAgentOrchestrator {
             formatted: ToolResultFormatter.sqlResult(result),
             queryResult: result,
             executedSql: result.sql,
+            schemaError: null,
           );
         } catch (e) {
           return (
             formatted: ToolResultFormatter.sqlError(e.toString()),
             queryResult: null,
             executedSql: trimmedSql,
+            schemaError: null,
           );
         }
       case 'explain_sql':
@@ -200,6 +233,7 @@ class AiAgentOrchestrator {
             formatted: ToolResultFormatter.sqlError('sql argument is required'),
             queryResult: null,
             executedSql: null,
+            schemaError: null,
           );
         }
         try {
@@ -211,12 +245,14 @@ class AiAgentOrchestrator {
             formatted: ToolResultFormatter.explainResult(lines),
             queryResult: null,
             executedSql: null,
+            schemaError: null,
           );
         } catch (e) {
           return (
             formatted: ToolResultFormatter.sqlError('explain failed: $e'),
             queryResult: null,
             executedSql: null,
+            schemaError: null,
           );
         }
       default:
@@ -224,6 +260,7 @@ class AiAgentOrchestrator {
           formatted: ToolResultFormatter.sqlError('unknown tool: ${toolCall.name}'),
           queryResult: null,
           executedSql: null,
+          schemaError: null,
         );
     }
   }

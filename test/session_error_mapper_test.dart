@@ -48,4 +48,31 @@ void main() {
       expect(mapped.message, contains('unexpected'));
     });
   });
+
+  group('mapSchemaIntrospectionFailure', () {
+    test('permission on information_schema uses permission copy', () {
+      final mapped = SessionErrorMapper.mapSchemaIntrospectionFailure(
+        Exception(
+          'PostgresqlException: permission denied for table information_schema.columns',
+        ),
+      );
+      expect(mapped.message, contains('permission denied'));
+      expect(mapped.message, contains('Natural-language answers'));
+      expect(mapped.message, isNot(contains('PostgresqlException')));
+    });
+
+    test('not connected uses short copy', () {
+      final mapped = SessionErrorMapper.mapSchemaIntrospectionFailure(
+        StateError('Not connected to database'),
+      );
+      expect(mapped.message, 'Not connected to the database.');
+    });
+
+    test('long generic errors are shortened', () {
+      final mapped = SessionErrorMapper.mapSchemaIntrospectionFailure(
+        Exception('x' * 200),
+      );
+      expect(mapped.message.length, lessThanOrEqualTo(160));
+    });
+  });
 }

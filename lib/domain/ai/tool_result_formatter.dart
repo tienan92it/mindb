@@ -26,6 +26,16 @@ instruction: Only reference tables and columns listed above.
 '''.trim();
   }
 
+  static String schemaError(String error) {
+    return '''
+source: get_schema
+status: error
+no_data: true
+error: $error
+instruction: Do not invent schema. Report unavailable or Unknown.
+'''.trim();
+  }
+
   static String sqlError(String error) {
     return '''
 source: execute_sql
