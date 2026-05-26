@@ -27,6 +27,17 @@ TranscriptLine transcriptLineForSchemaDegraded(String message) {
   return SystemLine('Schema unavailable — $message');
 }
 
+/// Visible transcript line when the session schema index is truncated.
+TranscriptLine transcriptLineForSchemaPartial({
+  required int shownTables,
+  required int totalTables,
+}) {
+  return SystemLine(
+    'Schema index partial — showing $shownTables of $totalTables tables. '
+    'Use get_schema with schema, table, or search for tables not listed.',
+  );
+}
+
 /// Maps agent tool results to transcript lines (parity with direct `sql:` path).
 TranscriptLine transcriptLineForAgentToolResult(AgentToolResultEvent event) {
   if (event.toolName == 'execute_sql' && event.queryResult != null) {
@@ -307,6 +318,16 @@ class SessionController extends StateNotifier<SessionState> {
         switch (event) {
           case AgentSchemaDegradedEvent(:final message):
             newLines.add(transcriptLineForSchemaDegraded(message));
+          case AgentSchemaPartialEvent(
+            :final shownTables,
+            :final totalTables,
+          ):
+            newLines.add(
+              transcriptLineForSchemaPartial(
+                shownTables: shownTables,
+                totalTables: totalTables,
+              ),
+            );
           case AgentToolCallEvent(:final toolName):
             if (showAgentToolCallLine(toolName)) {
               newLines.add(SystemLine('tool → $toolName'));
