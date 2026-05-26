@@ -82,7 +82,7 @@ Re-paste updated prompts from workflow JSON after pulling.
 3. Trigger: **Webhook** (copy URL for your scheduler)
 4. Repo `tienan92it/mindb`, branch `master`
 5. **Agent Instructions:** copy `prompt` field from matching `.workflow.json`
-6. Tools: Open pull request **OFF**, Memories ON for explore/plan/dev/review roles
+6. Tools: Open pull request **OFF** for all roles (including Release Announce), Memories ON for explore/plan/dev/review; OFF for Deliver Ship and Release Announce
 
 ## Deliver (two automations)
 
@@ -94,6 +94,9 @@ Webhook merge of Code Reviewer–approved PRs whenever triggered.
 
 1. Trigger: **Webhook** (from `.github/workflows/release.yml` on tag push only)
 2. Secrets on GitHub repo: `CURSOR_ANNOUNCE_WEBHOOK_URL`, `CURSOR_ANNOUNCE_WEBHOOK_KEY`
+3. Cursor tools: **Open pull request OFF** (required — tool shows red/fails; prompt uses `gh pr create`)
+4. Cloud secret **`GH_TOKEN`** on the automation (PAT with `repo` scope) for `gh release view` and `gh pr create`
+5. GitHub integration: Contents write on `tienan92it/mindb`
 
 ## Legacy
 
