@@ -1,8 +1,10 @@
 name: Deliver auto-ship
 
 on:
-  check_suite:
+  workflow_run:
+    workflows: [CI]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,7 +13,10 @@ permissions:
 
 jobs:
   merge-when-green:
-    if: github.event.check_suite.conclusion == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,12 +26,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           REPO="${{ github.repository }}"
-          PRS=$(gh pr list --repo "$REPO" --state open --label ready-ship --json number,headRefOid --jq '.[] | select(.headRefOid == "'"${{ github.event.check_suite.head_sha }}"'") | .number')
-          for pr in $PRS; do
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            mapfile -t PRS < <(
+              gh pr list --repo "$REPO" --state open --label ready-ship \
+                --json number,createdAt --jq 'sort_by(.createdAt) | .[].number'
+            )
+          else
+            HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
+            mapfile -t PRS < <(
+              gh pr list --repo "$REPO" --state open --label ready-ship \
+                --json number,headRefOid --jq \
+                ".[] | select(.headRefOid == \"$HEAD_SHA\") | .number"
+            )
+          fi
+          for pr in "${PRS[@]}"; do
             [ -z "$pr" ] && continue
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              if ! gh pr checks "$pr" --repo "$REPO"; then
+                echo "Skipping PR #$pr — checks not all green"
+                continue
+              fi
+            fi
             echo "Auto-merging feature PR #$pr"
             gh pr merge "$pr" --repo "$REPO" --squash --delete-branch || true
-            ISSUE=$(gh pr view "$pr" --repo "$REPO" --json body --jq '.body' | grep -oE 'Fixes #[0-9]+' | head -1 | tr -d 'Fixes #')
+            META=$(gh pr view "$pr" --repo "$REPO" --json title,body --jq '[.title, .body] | join("\n")')
+            ISSUE=$(echo "$META" | grep -oE 'Fixes #[0-9]+' | head -1 | tr -d 'Fixes #')
             if [ -n "$ISSUE" ]; then
               gh issue edit "$ISSUE" --repo "$REPO" --remove-label building,in-review --add-label shipped 2>/dev/null || true
               gh issue close "$ISSUE" --repo "$REPO" --comment "Delivered via PR #$pr" 2>/dev/null || true
