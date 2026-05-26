@@ -31,5 +31,6 @@ jobs:
               gh issue edit "$ISSUE" --repo "$REPO" --remove-label building,in-review --add-label shipped 2>/dev/null || true
               gh issue close "$ISSUE" --repo "$REPO" --comment "Delivered via PR #$pr" 2>/dev/null || true
               bash .github/scripts/merge-docs-for-issue.sh "$ISSUE" "$REPO"
+              bash .github/scripts/close-explore-housekeeping.sh "$REPO" "$ISSUE"
             fi
           done

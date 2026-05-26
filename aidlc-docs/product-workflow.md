@@ -16,11 +16,11 @@ Webhooks trigger roles on your schedule — **no fixed times**. Each run advance
 | **Deliver Ship** | Feature merged + docs + issue closed |
 | **On tag** | Deliver Announce — landing changelog |
 
-Every PR: GitHub Actions CI (analyze + test). `auto-ship.yml` merges `ready-ship` feature PRs, then merges linked docs PRs via `merge-docs-for-issue.sh`.
+Every PR: GitHub Actions CI (analyze + test). `auto-ship.yml` merges `ready-ship` feature PRs, merges linked docs PRs via `merge-docs-for-issue.sh`, then runs `close-explore-housekeeping.sh`.
 
 ## Docs PRs
 
-Explore/plan PRs (`docs` label) are **not** merged at creation. They merge automatically when Deliver ships the related feature (`Fixes #N`). Ship issue body/comments must list brief, plan, and business scan PR URLs.
+Explore/plan PRs for **ship candidates** stay open until the feature ships. **Digest** runs (score < 7) merge docs immediately in Product Planner — no stale PRs.
 
 ## Core value filter (anti-slop)
 

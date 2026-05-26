@@ -51,7 +51,16 @@ gh label create ready-ship --repo tienan92it/mindb --description "Approved; merg
 1. GitHub integration: `tienan92it/mindb` — Issues, PRs, Contents write.
 2. Cloud secret **`GH_TOKEN`** (PAT with `repo` scope).
 3. Webhook URLs from Cursor for each role; wire your scheduler to POST on whatever cadence you want (hourly, on push, etc.).
-4. `.github/workflows/auto-ship.yml` merges `ready-ship` PRs on CI success, then runs `.github/scripts/merge-docs-for-issue.sh`.
+4. `.github/workflows/auto-ship.yml` merges `ready-ship` PRs on CI success, then runs `merge-docs-for-issue.sh` and `close-explore-housekeeping.sh`.
+
+## Explore housekeeping
+
+| Path | Who closes docs + trackers |
+|------|----------------------------|
+| **Ship** (score ≥ 7) | Deliver / auto-ship merges docs via `merge-docs-for-issue.sh`, then `close-explore-housekeeping.sh` |
+| **Digest** (score < 7) | Product Planner merges docs PRs and closes issues in the same run |
+
+Script: `.github/scripts/close-explore-housekeeping.sh` — closes `[business] Scan` and digest issues when linked PRs are no longer open.
 
 ## State checks (built into prompts)
 
