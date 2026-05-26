@@ -13,6 +13,6 @@ void main() {
       (line as SystemLine).text,
       contains('Schema index partial —'),
     );
-    expect((line as SystemLine).text, contains('10 of 500'));
+    expect(line.text, contains('10 of 500'));
   });
 }

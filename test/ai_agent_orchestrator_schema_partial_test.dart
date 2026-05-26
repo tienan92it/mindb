@@ -8,9 +8,7 @@ import 'package:mindb/domain/safety/safety_policy.dart';
 import 'package:mindb/domain/schema/schema_service.dart';
 
 class _LargeSchemaClient implements DatabaseClient {
-  _LargeSchemaClient({this.tableCount = 2500});
-
-  final int tableCount;
+  static const tableCount = 2500;
 
   @override
   bool get isConnected => true;
