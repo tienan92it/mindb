@@ -313,6 +313,16 @@ class AgentSchemaDegradedEvent extends AgentEvent {
   final String message;
 }
 
+class AgentSchemaPartialEvent extends AgentEvent {
+  const AgentSchemaPartialEvent({
+    required this.shownTables,
+    required this.totalTables,
+  });
+
+  final int shownTables;
+  final int totalTables;
+}
+
 class LlmToolCall {
   const LlmToolCall({
     required this.id,

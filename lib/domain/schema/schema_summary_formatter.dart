@@ -1,6 +1,20 @@
 import '../models/models.dart';
 import 'schema_query.dart';
 
+class SchemaIndexFormatResult {
+  const SchemaIndexFormatResult({
+    required this.text,
+    required this.totalTables,
+    required this.shownTables,
+  });
+
+  final String text;
+  final int totalTables;
+  final int shownTables;
+
+  bool get isPartial => shownTables < totalTables;
+}
+
 class SchemaSummaryFormatter {
   SchemaSummaryFormatter._();
 
@@ -8,12 +22,16 @@ class SchemaSummaryFormatter {
   static const toolDetailMaxChars = 600000;
 
   /// Table index only — safe for the system prompt on large databases.
-  static String formatSystemIndex(
+  static SchemaIndexFormatResult formatSystemIndex(
     DatabaseSchema schema, {
     int maxChars = systemIndexMaxChars,
   }) {
     if (schema.tables.isEmpty) {
-      return 'No tables found.';
+      return const SchemaIndexFormatResult(
+        text: 'No tables found.',
+        totalTables: 0,
+        shownTables: 0,
+      );
     }
 
     final header =
@@ -23,7 +41,12 @@ class SchemaSummaryFormatter {
         .map((table) => '${table.qualifiedName} (${table.columns.length} cols)')
         .toList();
 
-    return _truncateLines(lines, maxChars: maxChars, header: header);
+    final truncated = _truncateLines(lines, maxChars: maxChars, header: header);
+    return SchemaIndexFormatResult(
+      text: truncated.text,
+      totalTables: schema.tables.length,
+      shownTables: truncated.shown,
+    );
   }
 
   /// Tool output — detailed when filtered or small; compact index when too large.
@@ -60,7 +83,7 @@ class SchemaSummaryFormatter {
       header:
           'Schema has ${schema.tables.length} tables (${filtered.length} shown). '
           'Full column details omitted — call get_schema with schema, table, or search.\n',
-    );
+    ).text;
   }
 
   static List<SchemaTable> filterTables(
@@ -120,7 +143,7 @@ class SchemaSummaryFormatter {
     return buffer.toString().trim();
   }
 
-  static String _truncateLines(
+  static ({String text, int shown}) _truncateLines(
     List<String> lines, {
     required int maxChars,
     required String header,
@@ -142,7 +165,7 @@ class SchemaSummaryFormatter {
       buffer.writeln('... ($omitted more tables not shown)');
     }
 
-    return buffer.toString().trim();
+    return (text: buffer.toString().trim(), shown: shown);
   }
 
   static String _truncateText(String text, int maxChars, {String? suffix}) {

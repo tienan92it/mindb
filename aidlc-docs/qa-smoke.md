@@ -13,6 +13,7 @@ Run before every release and after user-facing PRs (~5 minutes).
 2. **Session header** — Transcript shows connect line + `llm: <provider> · <model>`.
 3. **Schema** — Ask "test connection" or "list tables". No schema SQL errors.
 3b. **Schema failure warning** — Connect with a role denied `SELECT` on `information_schema`. Ask a natural-language question; transcript shows `Schema unavailable — …` before the assistant reply (answers may still appear but are not schema-grounded).
+3c. **Schema partial index** — On a DB with more tables than fit in the compact index (or a test DB with thousands of tables), ask a natural-language question; transcript shows `Schema index partial — showing X of Y tables` before the assistant reply. Follow-up `get_schema` with a specific table name still returns column details.
 4. **Schema after DDL** — Run `sql: CREATE TABLE mindb_smoke_cols (id int);` (or `ALTER` / `DROP` a throwaway object). Ask NL: "what columns does mindb_smoke_cols have?" — answer lists `id` without app restart.
 5. **AI query** — Natural language question returns answer grounded in tool results. If `execute_sql` runs, the executed statement appears in the transcript immediately above the result table (or error block), not only `tool → execute_sql`.
 6. **Direct SQL** — `sql: SELECT 1` shows result table.

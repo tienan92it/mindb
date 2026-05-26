@@ -26,14 +26,50 @@ DatabaseSchema _largeSchema({required int tableCount}) {
 void main() {
   group('SchemaSummaryFormatter', () {
     test('formatSystemIndex stays compact for large schemas', () {
-      final summary = SchemaSummaryFormatter.formatSystemIndex(
+      final result = SchemaSummaryFormatter.formatSystemIndex(
         _largeSchema(tableCount: 500),
       );
 
-      expect(summary.length, lessThan(50000));
-      expect(summary, contains('500 tables'));
-      expect(summary, contains('table_0 (20 cols)'));
-      expect(summary, isNot(contains('col_0: text')));
+      expect(result.text.length, lessThan(50000));
+      expect(result.text, contains('500 tables'));
+      expect(result.text, contains('table_0 (20 cols)'));
+      expect(result.text, isNot(contains('col_0: text')));
+    });
+
+    test('formatSystemIndex reports partial when truncated', () {
+      final result = SchemaSummaryFormatter.formatSystemIndex(
+        _largeSchema(tableCount: 200),
+        maxChars: 2000,
+      );
+
+      expect(result.isPartial, isTrue);
+      expect(result.shownTables, lessThan(200));
+      expect(result.totalTables, 200);
+      expect(result.text, contains('more tables not shown'));
+    });
+
+    test('formatSystemIndex is not partial for small schemas', () {
+      final schema = DatabaseSchema(
+        fetchedAt: DateTime(2026),
+        tables: const [
+          SchemaTable(
+            schema: 'public',
+            name: 'users',
+            columns: [SchemaColumn(name: 'id', dataType: 'integer')],
+          ),
+          SchemaTable(
+            schema: 'public',
+            name: 'orders',
+            columns: [SchemaColumn(name: 'id', dataType: 'integer')],
+          ),
+        ],
+      );
+
+      final result = SchemaSummaryFormatter.formatSystemIndex(schema);
+
+      expect(result.isPartial, isFalse);
+      expect(result.shownTables, 2);
+      expect(result.totalTables, 2);
     });
 
     test('formatForTool returns detailed columns when filtered', () {

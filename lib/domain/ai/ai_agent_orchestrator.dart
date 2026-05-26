@@ -32,7 +32,7 @@ class AiAgentOrchestrator {
   }) async {
     final events = <AgentEvent>[];
     final indexLoad = await _loadSchemaIndex();
-    final schemaSummary = indexLoad.summary;
+    final schemaSummary = indexLoad.index.text;
     String? lastSchemaWarning;
 
     void emitSchemaDegraded(Object error) {
@@ -47,6 +47,13 @@ class AiAgentOrchestrator {
 
     if (indexLoad.error != null) {
       emitSchemaDegraded(indexLoad.error!);
+    } else if (indexLoad.index.isPartial) {
+      events.add(
+        AgentSchemaPartialEvent(
+          shownTables: indexLoad.index.shownTables,
+          totalTables: indexLoad.index.totalTables,
+        ),
+      );
     }
 
     final systemParts = <String>[
@@ -154,15 +161,22 @@ class AiAgentOrchestrator {
     );
   }
 
-  Future<({String summary, Object? error})> _loadSchemaIndex() async {
+  Future<({SchemaIndexFormatResult index, Object? error})> _loadSchemaIndex() async {
     try {
       final schema = await _schemaService.fetchSchema();
       return (
-        summary: SchemaSummaryFormatter.formatSystemIndex(schema),
+        index: SchemaSummaryFormatter.formatSystemIndex(schema),
         error: null,
       );
     } catch (e) {
-      return (summary: 'Schema unavailable: $e', error: e);
+      return (
+        index: SchemaIndexFormatResult(
+          text: 'Schema unavailable: $e',
+          totalTables: 0,
+          shownTables: 0,
+        ),
+        error: e,
+      );
     }
   }
 
