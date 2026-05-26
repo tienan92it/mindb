@@ -144,6 +144,8 @@ class QueryResult {
     this.rowsAffected,
     required this.duration,
     this.sql,
+    this.rowCapApplied = false,
+    this.appliedRowCap,
   });
 
   final List<String> columns;
@@ -151,8 +153,23 @@ class QueryResult {
   final int? rowsAffected;
   final Duration duration;
   final String? sql;
+  final bool rowCapApplied;
+  final int? appliedRowCap;
 
   bool get isSelect => columns.isNotEmpty;
+
+  bool get showsRowCapNotice =>
+      isSelect && rowCapApplied && appliedRowCap != null;
+
+  String? get rowCapNoticeText {
+    if (!showsRowCapNotice) return null;
+    final cap = appliedRowCap!;
+    final shown = rows.length;
+    if (shown >= cap) {
+      return 'Showing first $cap rows · row cap $cap applied · results may be partial';
+    }
+    return 'Row cap $cap applied · showing $shown rows';
+  }
 }
 
 class SchemaColumn {

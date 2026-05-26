@@ -28,47 +28,65 @@ class TableResultBlock extends StatelessWidget {
       );
     }
 
+    final notice = result.rowCapNoticeText;
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: ConnectionsScreen.muted.withValues(alpha: 0.4)),
         borderRadius: BorderRadius.circular(4),
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          headingRowColor: WidgetStateProperty.all(const Color(0xFF1A1A1A)),
-          dataRowMinHeight: 32,
-          dataRowMaxHeight: 40,
-          columns: result.columns
-              .map(
-                (column) => DataColumn(
-                  label: Text(
-                    column,
-                    style: mono.copyWith(
-                      color: ConnectionsScreen.accent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          rows: result.rows
-              .map(
-                (row) => DataRow(
-                  cells: row
-                      .map(
-                        (value) => DataCell(
-                          Text(
-                            formatCellValue(value),
-                            style: mono.copyWith(color: Colors.white70),
-                          ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: DataTable(
+              headingRowColor: WidgetStateProperty.all(const Color(0xFF1A1A1A)),
+              dataRowMinHeight: 32,
+              dataRowMaxHeight: 40,
+              columns: result.columns
+                  .map(
+                    (column) => DataColumn(
+                      label: Text(
+                        column,
+                        style: mono.copyWith(
+                          color: ConnectionsScreen.accent,
+                          fontWeight: FontWeight.w600,
                         ),
-                      )
-                      .toList(),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              rows: result.rows
+                  .map(
+                    (row) => DataRow(
+                      cells: row
+                          .map(
+                            (value) => DataCell(
+                              Text(
+                                formatCellValue(value),
+                                style: mono.copyWith(color: Colors.white70),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+          if (notice != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+              child: Text(
+                notice,
+                style: mono.copyWith(
+                  color: ConnectionsScreen.muted,
+                  fontSize: 11,
                 ),
-              )
-              .toList(),
-        ),
+              ),
+            ),
+        ],
       ),
     );
   }
