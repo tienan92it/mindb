@@ -2,19 +2,19 @@
 
 Professional loop for mindb: **Business Explorer → Product Planner → Technical Analysis → Dev → Code Reviewer → Deliver**.
 
-## Cadence (webhook, ~4×/day)
+## Cadence (continuous delivery)
 
-External jobs trigger each role automation via **webhook** about four times per day. Roles are **state-driven** — each run checks for actionable work and exits without duplicating artifacts. Release Announce remains a **separate tag webhook** only.
+Webhooks trigger roles on your schedule — **no fixed times**. Each run advances the pipeline when work exists: discovery → plan → build → review → ship. Release Announce is a **separate tag webhook** only.
 
-| Role | Automation | Output |
-|------|------------|--------|
-| **Business Explorer** | Business scan PR + `[business]` issue (once/day) |
-| **Product Planner** | Scored brief + `planned` if ≥7 (once/day when scan ready) |
-| **Technical Analysis** | Tech plan PR + `tech-reviewed` (one issue/run) |
-| **Dev** | Code PR (`building`) (one issue/run) |
-| **Code Reviewer** | Fix loop → `ready-ship` (one PR/run) |
-| **Deliver Ship** | Merge feature PR + linked docs PRs when CI green |
-| **On tag** | Deliver Announce | Landing changelog (tag webhook) |
+| Role | Output per successful run |
+|------|---------------------------|
+| **Business Explorer** | Business scan when backlog needs feeding |
+| **Product Planner** | Scored brief + `planned` if ≥7 |
+| **Technical Analysis** | Tech plan + `tech-reviewed` |
+| **Dev** | Implementation PR (`building`) |
+| **Code Reviewer** | `ready-ship` when quality bar met |
+| **Deliver Ship** | Feature merged + docs + issue closed |
+| **On tag** | Deliver Announce — landing changelog |
 
 Every PR: GitHub Actions CI (analyze + test). `auto-ship.yml` merges `ready-ship` feature PRs, then merges linked docs PRs via `merge-docs-for-issue.sh`.
 
