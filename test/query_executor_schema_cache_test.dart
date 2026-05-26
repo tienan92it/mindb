@@ -65,6 +65,11 @@ Future<bool> _autoApprove(String sql, SqlClassification classification) async {
   return true;
 }
 
+int _introspectionExecutions(_RecordingDatabaseClient client) =>
+    client.executedSql
+        .where((sql) => sql.contains('information_schema'))
+        .length;
+
 void main() {
   group('QueryExecutor schema cache', () {
     late _RecordingDatabaseClient client;
@@ -87,27 +92,27 @@ void main() {
     test('DDL execute clears schema cache', () async {
       await schemaService.fetchSchema();
       expect(schemaService.cachedSchema, isNotNull);
-      final introspectionCountBefore = client.executedSql.length;
+      final introspectionBefore = _introspectionExecutions(client);
 
       await executor.execute('CREATE TABLE new_table (id int)');
 
       expect(schemaService.cachedSchema, isNull);
 
       await schemaService.fetchSchema();
-      expect(client.executedSql.length, greaterThan(introspectionCountBefore));
+      expect(_introspectionExecutions(client), greaterThan(introspectionBefore));
     });
 
     test('SELECT execute keeps schema cache', () async {
       await schemaService.fetchSchema();
       expect(schemaService.cachedSchema, isNotNull);
-      final introspectionCountBefore = client.executedSql.length;
+      final introspectionBefore = _introspectionExecutions(client);
 
       await executor.execute('SELECT 1');
 
       expect(schemaService.cachedSchema, isNotNull);
 
       await schemaService.fetchSchema();
-      expect(client.executedSql.length, introspectionCountBefore);
+      expect(_introspectionExecutions(client), introspectionBefore);
     });
 
     test('INSERT execute keeps schema cache', () async {
