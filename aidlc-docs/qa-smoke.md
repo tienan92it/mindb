@@ -12,6 +12,7 @@ Run before every release and after user-facing PRs (~5 minutes).
 1. **Connections** — Add profile (localhost:5432, postgres/postgres). Opens session.
 2. **Session header** — Transcript shows connect line + `llm: <provider> · <model>`.
 3. **Schema** — Ask "test connection" or "list tables". No schema SQL errors.
+3b. **Schema failure warning** — Connect with a role denied `SELECT` on `information_schema`. Ask a natural-language question; transcript shows `Schema unavailable — …` before the assistant reply (answers may still appear but are not schema-grounded).
 4. **Schema after DDL** — Run `sql: CREATE TABLE mindb_smoke_cols (id int);` (or `ALTER` / `DROP` a throwaway object). Ask NL: "what columns does mindb_smoke_cols have?" — answer lists `id` without app restart.
 5. **AI query** — Natural language question returns answer grounded in tool results. If `execute_sql` runs, the executed statement appears in the transcript immediately above the result table (or error block), not only `tool → execute_sql`.
 6. **Direct SQL** — `sql: SELECT 1` shows result table.

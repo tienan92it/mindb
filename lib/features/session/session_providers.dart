@@ -22,6 +22,11 @@ import '../../domain/session/session_context_builder.dart';
 import '../connections/connections_providers.dart';
 import 'session_error_mapper.dart';
 
+/// Visible transcript line when schema introspection is degraded.
+TranscriptLine transcriptLineForSchemaDegraded(String message) {
+  return SystemLine('Schema unavailable — $message');
+}
+
 /// Maps agent tool results to transcript lines (parity with direct `sql:` path).
 TranscriptLine transcriptLineForAgentToolResult(AgentToolResultEvent event) {
   if (event.toolName == 'execute_sql' && event.queryResult != null) {
@@ -300,6 +305,8 @@ class SessionController extends StateNotifier<SessionState> {
       final assistantReply = _contextBuilder.extractAssistantReply(events);
       for (final event in events) {
         switch (event) {
+          case AgentSchemaDegradedEvent(:final message):
+            newLines.add(transcriptLineForSchemaDegraded(message));
           case AgentToolCallEvent(:final toolName):
             if (showAgentToolCallLine(toolName)) {
               newLines.add(SystemLine('tool → $toolName'));

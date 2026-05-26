@@ -290,6 +290,12 @@ class AgentErrorEvent extends AgentEvent {
   final String message;
 }
 
+class AgentSchemaDegradedEvent extends AgentEvent {
+  const AgentSchemaDegradedEvent(this.message);
+
+  final String message;
+}
+
 class LlmToolCall {
   const LlmToolCall({
     required this.id,
