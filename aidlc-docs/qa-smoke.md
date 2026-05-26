@@ -12,11 +12,12 @@ Run before every release and after user-facing PRs (~5 minutes).
 1. **Connections** — Add profile (localhost:5432, postgres/postgres). Opens session.
 2. **Session header** — Transcript shows connect line + `llm: <provider> · <model>`.
 3. **Schema** — Ask "test connection" or "list tables". No schema SQL errors.
-4. **AI query** — Natural language question returns answer grounded in tool results. If `execute_sql` runs, the executed statement appears in the transcript immediately above the result table (or error block), not only `tool → execute_sql`.
-5. **Direct SQL** — `sql: SELECT 1` shows result table.
-6. **Safety** — Read-only mode blocks INSERT; destructive SQL prompts confirmation.
-7. **Settings** — Switch provider/model, save, reconnect; LLM bar reflects choice.
-8. **Persistence** — Kill app, reopen session; history restores and scrolls to bottom.
+4. **Schema after DDL** — Run `sql: CREATE TABLE mindb_smoke_cols (id int);` (or `ALTER` / `DROP` a throwaway object). Ask NL: "what columns does mindb_smoke_cols have?" — answer lists `id` without app restart.
+5. **AI query** — Natural language question returns answer grounded in tool results. If `execute_sql` runs, the executed statement appears in the transcript immediately above the result table (or error block), not only `tool → execute_sql`.
+6. **Direct SQL** — `sql: SELECT 1` shows result table.
+7. **Safety** — Read-only mode blocks INSERT; destructive SQL prompts confirmation.
+8. **Settings** — Switch provider/model, save, reconnect; LLM bar reflects choice.
+9. **Persistence** — Kill app, reopen session; history restores and scrolls to bottom.
 
 ## Platform notes
 

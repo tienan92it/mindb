@@ -23,6 +23,20 @@ class SafetyPolicy {
 
   static final _limitPattern = RegExp(r'\bLIMIT\s+\d+\b', caseSensitive: false);
 
+  static final _ddlPattern = RegExp(
+    r'\b(CREATE|ALTER|DROP)\b',
+    caseSensitive: false,
+  );
+
+  bool affectsSchemaStructure(String sql) {
+    final trimmed = sql.trim();
+    if (trimmed.isEmpty) return false;
+    if (RegExp(r'^\s*EXPLAIN\b', caseSensitive: false).hasMatch(trimmed)) {
+      return false;
+    }
+    return _ddlPattern.hasMatch(trimmed);
+  }
+
   SqlClassification classify(String sql) {
     final trimmed = sql.trim();
     if (trimmed.isEmpty) {

@@ -172,6 +172,7 @@ class SessionController extends StateNotifier<SessionState> {
       _queryExecutor = QueryExecutor(
         client: _client,
         safetyPolicy: safetyPolicy,
+        schemaService: _schemaService,
         maxRows: settings.maxRows,
         queryTimeout: Duration(seconds: settings.queryTimeoutSeconds),
         confirmationHandler: _handleConfirmation,

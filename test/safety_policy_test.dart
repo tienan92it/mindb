@@ -39,5 +39,29 @@ void main() {
       final result = policy.injectLimit('SELECT * FROM users LIMIT 50', 100);
       expect(result, 'SELECT * FROM users LIMIT 50');
     });
+
+    test('affectsSchemaStructure detects DDL', () {
+      expect(
+        policy.affectsSchemaStructure('CREATE TABLE t (id int)'),
+        isTrue,
+      );
+      expect(
+        policy.affectsSchemaStructure('ALTER TABLE t ADD COLUMN c text'),
+        isTrue,
+      );
+      expect(policy.affectsSchemaStructure('DROP TABLE t'), isTrue);
+    });
+
+    test('affectsSchemaStructure ignores DML and SELECT', () {
+      expect(policy.affectsSchemaStructure('INSERT INTO t VALUES (1)'), isFalse);
+      expect(policy.affectsSchemaStructure('SELECT * FROM t'), isFalse);
+    });
+
+    test('affectsSchemaStructure ignores EXPLAIN prefix', () {
+      expect(
+        policy.affectsSchemaStructure('EXPLAIN CREATE TABLE t (id int)'),
+        isFalse,
+      );
+    });
   });
 }
