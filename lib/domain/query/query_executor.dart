@@ -52,6 +52,7 @@ class QueryExecutor {
     }
 
     final limitedSql = _safetyPolicy.injectLimit(trimmed, _maxRows);
+    final limitInjected = limitedSql != trimmed;
     final result = await _client.execute(limitedSql, timeout: _queryTimeout);
 
     final schemaService = _schemaService;
@@ -65,6 +66,8 @@ class QueryExecutor {
       rowsAffected: result.rowsAffected,
       duration: result.duration,
       sql: limitedSql,
+      rowCapApplied: limitInjected && result.isSelect,
+      appliedRowCap: limitInjected && result.isSelect ? _maxRows : null,
     );
   }
 }
