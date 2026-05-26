@@ -92,6 +92,8 @@ Webhook merge of Code Reviewer–approved PRs whenever triggered.
 
 ### Announce — `release-announce.workflow.json`
 
+Copy/paste prompt and setup: [release-announce.prompt.md](./release-announce.prompt.md)
+
 1. Trigger: **Webhook** (from `.github/workflows/release.yml` on tag push only)
 2. Secrets on GitHub repo: `CURSOR_ANNOUNCE_WEBHOOK_URL`, `CURSOR_ANNOUNCE_WEBHOOK_KEY`
 3. Cursor tools: **Open pull request OFF** (required — tool shows red/fails; prompt uses `gh pr create`)
