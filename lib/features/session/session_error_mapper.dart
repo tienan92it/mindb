@@ -72,7 +72,6 @@ abstract final class SessionErrorMapper {
     return SessionErrorMapping(message: _shorten(text));
   }
 
-  /// Maps natural-language ask / LLM API failures to transcript copy.
   /// Maps direct SQL / `QueryExecutor` failures to transcript copy.
   static SessionErrorMapping mapExecuteFailure(Object error) {
     if (error is StateError) {
