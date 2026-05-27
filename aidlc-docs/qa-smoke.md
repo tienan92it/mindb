@@ -20,9 +20,10 @@ Run before every release and after user-facing PRs (~5 minutes).
 6. **Direct SQL** — `sql: SELECT 1` shows result table.
 6b. **Row-cap notice** — `sql: SELECT * FROM generate_series(1, 500)` (or any large SELECT without `LIMIT`) shows ≤`maxRows` rows and a muted footer (`row cap` / `may be partial`). `sql: SELECT 1 LIMIT 10` shows no footer.
 7. **Safety** — Read-only mode blocks INSERT; destructive SQL prompts confirmation.
-7b. **Read-only transcript** — Enable read-only in Settings, reconnect, run `sql: INSERT INTO …`. Transcript shows mapped read-only message and Open Settings (not raw StateError).
+7b. **Read-only transcript** — Enable read-only in Settings, save, return to open session (no reconnect), run `sql: INSERT INTO …`. Transcript shows mapped read-only message and Open Settings (not raw StateError).
 7c. **Cancelled SQL** — With read-only off, run destructive/write SQL, cancel confirmation sheet. Transcript shows mapped cancelled message.
-8. **Settings** — Switch provider/model, save, reconnect; LLM bar reflects choice.
+8. **Settings** — Switch provider/model, save, return to open session — LLM bar and transcript reflect choice without reconnect.
+8b. **Read-only live refresh** — Same as 7b without reconnect (save read-only, return to session, run blocked SQL).
 9. **Persistence** — Kill app, reopen session; history restores and scrolls to bottom.
 
 ## Platform notes
