@@ -1,11 +1,6 @@
 import 'dart:io';
 
-/// Where the session screen should send the user after a connect failure.
-enum SessionRecoveryAction {
-  none,
-  settings,
-  editConnection,
-}
+import '../../domain/models/models.dart';
 
 class SessionErrorMapping {
   const SessionErrorMapping({
@@ -75,6 +70,95 @@ abstract final class SessionErrorMapper {
     }
 
     return SessionErrorMapping(message: _shorten(text));
+  }
+
+  /// Maps natural-language ask / LLM API failures to transcript copy.
+  static SessionErrorMapping mapNlFailure(Object error) {
+    if (error is String) {
+      return SessionErrorMapping(message: error);
+    }
+
+    final text = _nlErrorText(error);
+
+    if (error is StateError && text.contains('LLM API key not configured')) {
+      return const SessionErrorMapping(
+        message: 'LLM API key not configured. Add your key in Settings.',
+        action: SessionRecoveryAction.settings,
+      );
+    }
+
+    if (error is SocketException || _looksLikeNetworkFailure(text)) {
+      return const SessionErrorMapping(
+        message:
+            'Could not reach the LLM API. Check network and try again.',
+        action: SessionRecoveryAction.settings,
+      );
+    }
+
+    final lower = text.toLowerCase();
+
+    if (lower.contains('401') ||
+        lower.contains('invalid_api_key') ||
+        lower.contains('incorrect api key') ||
+        lower.contains('authentication')) {
+      return const SessionErrorMapping(
+        message:
+            'LLM API authentication failed. Check your API key in Settings.',
+        action: SessionRecoveryAction.settings,
+      );
+    }
+
+    if (lower.contains('403') ||
+        (lower.contains('permission') && lower.contains('api'))) {
+      return const SessionErrorMapping(
+        message:
+            'LLM API access denied for this key. '
+            'Check provider account tier in Settings.',
+        action: SessionRecoveryAction.settings,
+      );
+    }
+
+    if (lower.contains('429') || lower.contains('rate limit')) {
+      final firstLine = text.split('\n').first.trim();
+      final message = firstLine.isNotEmpty
+          ? firstLine
+          : 'LLM rate limit reached. Wait and retry, or choose a lighter model in Settings.';
+      return SessionErrorMapping(
+        message: message,
+        action: SessionRecoveryAction.settings,
+      );
+    }
+
+    if (error is StateError && _isFormattedLlmProviderError(text)) {
+      return SessionErrorMapping(
+        message: text,
+        action: _nlMessageMentionsSettingsOrKey(text)
+            ? SessionRecoveryAction.settings
+            : SessionRecoveryAction.none,
+      );
+    }
+
+    return SessionErrorMapping(message: _shorten(text));
+  }
+
+  static String _nlErrorText(Object error) {
+    if (error is StateError) {
+      return error.message;
+    }
+    return error.toString();
+  }
+
+  static bool _isFormattedLlmProviderError(String message) {
+    return message.contains(' request failed (') ||
+        message.contains('rate limit (429)') ||
+        message.contains('context too large (400)') ||
+        message.contains('model error (404)') ||
+        message.contains('tool-call error (400)');
+  }
+
+  static bool _nlMessageMentionsSettingsOrKey(String message) {
+    final lower = message.toLowerCase();
+    return lower.contains('settings') || lower.contains('api key');
   }
 
   static bool _looksLikeNetworkFailure(String text) {
