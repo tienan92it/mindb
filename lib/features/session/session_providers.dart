@@ -33,6 +33,12 @@ ErrorLine transcriptErrorLineForNlFailure(Object error) {
   return ErrorLine(mapped.message, action: mapped.action);
 }
 
+/// Visible transcript error when direct SQL or `execute_sql` fails.
+ErrorLine transcriptErrorLineForExecuteFailure(Object error) {
+  final mapped = SessionErrorMapper.mapExecuteFailure(error);
+  return ErrorLine(mapped.message, action: mapped.action);
+}
+
 /// Visible transcript line when the session schema index is truncated.
 TranscriptLine transcriptLineForSchemaPartial({
   required int shownTables,
@@ -294,16 +300,26 @@ class SessionController extends StateNotifier<SessionState> {
     try {
       if (trimmed.toLowerCase().startsWith('sql:')) {
         final sql = trimmed.substring(4).trim();
-        final result = await executor.execute(sql);
-        final reply = _formatSqlResult(result);
-        await _persistTurns(
-          userContent: trimmed,
-          assistantContent: reply,
-        );
-        state = state.copyWith(
-          lines: [...state.lines, ResultLine(result), AssistantLine(reply)],
-          isBusy: false,
-        );
+        try {
+          final result = await executor.execute(sql);
+          final reply = _formatSqlResult(result);
+          await _persistTurns(
+            userContent: trimmed,
+            assistantContent: reply,
+          );
+          state = state.copyWith(
+            lines: [...state.lines, ResultLine(result), AssistantLine(reply)],
+            isBusy: false,
+          );
+        } catch (e) {
+          state = state.copyWith(
+            lines: [
+              ...state.lines,
+              transcriptErrorLineForExecuteFailure(e),
+            ],
+            isBusy: false,
+          );
+        }
         return;
       }
 
@@ -446,7 +462,7 @@ class SessionController extends StateNotifier<SessionState> {
       );
     } catch (e) {
       state = state.copyWith(
-        lines: [...state.lines, ErrorLine(e.toString())],
+        lines: [...state.lines, transcriptErrorLineForExecuteFailure(e)],
         isBusy: false,
       );
     }

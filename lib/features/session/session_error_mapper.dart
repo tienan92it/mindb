@@ -72,7 +72,47 @@ abstract final class SessionErrorMapper {
     return SessionErrorMapping(message: _shorten(text));
   }
 
-  /// Maps natural-language ask / LLM API failures to transcript copy.
+  /// Maps direct SQL / `QueryExecutor` failures to transcript copy.
+  static SessionErrorMapping mapExecuteFailure(Object error) {
+    if (error is StateError) {
+      final msg = error.message;
+      if (msg.contains('Read-only mode')) {
+        return const SessionErrorMapping(
+          message:
+              'Read-only mode is on. Turn off read-only in Settings '
+              'to run write or DDL SQL.',
+          action: SessionRecoveryAction.settings,
+        );
+      }
+      if (msg.contains('Query cancelled by user')) {
+        return const SessionErrorMapping(
+          message: 'Query cancelled. No changes were made.',
+        );
+      }
+      if (msg.contains('Not connected')) {
+        return const SessionErrorMapping(
+          message: 'Not connected to the database.',
+        );
+      }
+      if (msg.contains('Confirmation required')) {
+        return const SessionErrorMapping(
+          message: 'Could not confirm this query. Reconnect and try again.',
+        );
+      }
+    }
+
+    final text = error.toString();
+    if (error is SocketException || _looksLikeNetworkFailure(text)) {
+      return const SessionErrorMapping(
+        message:
+            'Could not reach the database host. Check host, port, and network.',
+        action: SessionRecoveryAction.editConnection,
+      );
+    }
+
+    return SessionErrorMapping(message: _shorten(text));
+  }
+
   static SessionErrorMapping mapNlFailure(Object error) {
     if (error is String) {
       return SessionErrorMapping(message: error);
