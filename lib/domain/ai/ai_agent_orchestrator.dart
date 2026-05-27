@@ -234,7 +234,9 @@ class AiAgentOrchestrator {
           );
         } catch (e) {
           return (
-            formatted: ToolResultFormatter.sqlError(e.toString()),
+            formatted: ToolResultFormatter.sqlError(
+              SessionErrorMapper.mapExecuteFailure(e).message,
+            ),
             queryResult: null,
             executedSql: trimmedSql,
             schemaError: null,

@@ -169,4 +169,47 @@ void main() {
       expect(mapped.action, SessionRecoveryAction.none);
     });
   });
+
+  group('mapExecuteFailure', () {
+    test('maps read-only block to settings action', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        StateError('Read-only mode: write/destructive SQL is blocked'),
+      );
+      expect(mapped.message.toLowerCase(), contains('read-only'));
+      expect(mapped.message, isNot(contains('Bad state')));
+      expect(mapped.action, SessionRecoveryAction.settings);
+    });
+
+    test('maps user cancellation', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        StateError('Query cancelled by user'),
+      );
+      expect(mapped.message.toLowerCase(), contains('cancelled'));
+      expect(mapped.action, SessionRecoveryAction.none);
+    });
+
+    test('maps not connected', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        StateError('Not connected to database'),
+      );
+      expect(mapped.message, contains('Not connected'));
+      expect(mapped.action, SessionRecoveryAction.none);
+    });
+
+    test('maps socket failures to host reachability message', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        const SocketException('Connection refused'),
+      );
+      expect(mapped.message, contains('Could not reach'));
+      expect(mapped.action, SessionRecoveryAction.editConnection);
+    });
+
+    test('unknown errors use none action and shorten', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        Exception('syntax error at or near'),
+      );
+      expect(mapped.action, SessionRecoveryAction.none);
+      expect(mapped.message.length, lessThanOrEqualTo(160));
+    });
+  });
 }
