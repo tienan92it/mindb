@@ -4,6 +4,13 @@ const uuid = Uuid();
 
 enum SqlClassification { safe, write, destructive }
 
+/// Where the session UI should send the user after a recoverable failure.
+enum SessionRecoveryAction {
+  none,
+  settings,
+  editConnection,
+}
+
 enum LlmProviderType { openai, anthropic, kimi }
 
 extension LlmProviderTypeX on LlmProviderType {
@@ -250,9 +257,10 @@ class ResultLine extends TranscriptLine {
 }
 
 class ErrorLine extends TranscriptLine {
-  const ErrorLine(this.message);
+  const ErrorLine(this.message, {this.action});
 
   final String message;
+  final SessionRecoveryAction? action;
 }
 
 class SystemLine extends TranscriptLine {

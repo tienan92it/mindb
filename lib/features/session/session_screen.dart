@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../domain/models/models.dart';
 import '../connections/connections_screen.dart';
 import 'llm_status_bar.dart';
-import 'session_error_mapper.dart';
 import 'session_providers.dart';
 import 'sql_input_bar.dart';
 import 'transcript_view.dart';

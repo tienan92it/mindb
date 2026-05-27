@@ -27,6 +27,12 @@ TranscriptLine transcriptLineForSchemaDegraded(String message) {
   return SystemLine('Schema unavailable — $message');
 }
 
+/// Visible transcript error when a natural-language ask or agent error fails.
+ErrorLine transcriptErrorLineForNlFailure(Object error) {
+  final mapped = SessionErrorMapper.mapNlFailure(error);
+  return ErrorLine(mapped.message, action: mapped.action);
+}
+
 /// Visible transcript line when the session schema index is truncated.
 TranscriptLine transcriptLineForSchemaPartial({
   required int shownTables,
@@ -335,7 +341,7 @@ class SessionController extends StateNotifier<SessionState> {
           case AgentToolResultEvent event:
             newLines.addAll(transcriptLinesForAgentToolResult(event));
           case AgentErrorEvent(:final message):
-            newLines.add(ErrorLine(message));
+            newLines.add(transcriptErrorLineForNlFailure(message));
           case AgentTextEvent():
           case AgentDoneEvent():
             break;
@@ -356,7 +362,7 @@ class SessionController extends StateNotifier<SessionState> {
       );
     } catch (e) {
       state = state.copyWith(
-        lines: [...state.lines, ErrorLine(e.toString())],
+        lines: [...state.lines, transcriptErrorLineForNlFailure(e)],
         isBusy: false,
       );
     }

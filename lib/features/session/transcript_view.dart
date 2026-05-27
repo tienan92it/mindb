@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/models/models.dart';
@@ -92,11 +93,29 @@ class _TranscriptViewState extends State<TranscriptView> {
                 ),
               ),
             ),
-          ErrorLine(:final message) => Padding(
+          ErrorLine(:final message, :final action) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(
-                '! $message',
-                style: mono.copyWith(color: Colors.redAccent),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '! $message',
+                    style: mono.copyWith(color: Colors.redAccent),
+                  ),
+                  if (action == SessionRecoveryAction.settings)
+                    TextButton(
+                      onPressed: () => context.push('/settings'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        'Open Settings',
+                        style: mono.copyWith(color: ConnectionsScreen.accent),
+                      ),
+                    ),
+                ],
               ),
             ),
           ResultLine(:final result) => Padding(
