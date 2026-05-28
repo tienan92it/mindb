@@ -157,12 +157,14 @@ class SessionState {
 
 class SessionController extends StateNotifier<SessionState> {
   SessionController(this._ref, this.connectionId) : super(const SessionState()) {
+    _ref.listen<AsyncValue<AppSettings>>(appSettingsProvider, _onAppSettingsChanged);
     _connect();
   }
 
   final Ref _ref;
   final String connectionId;
   Completer<bool>? _confirmationCompleter;
+  bool _pendingSettingsRefresh = false;
 
   PostgresDatabaseClient get _client => _ref.read(postgresClientProvider);
   ConnectionRepository get _connectionRepo =>
@@ -176,6 +178,87 @@ class SessionController extends StateNotifier<SessionState> {
 
   SessionContextRepository get _sessionContextRepo =>
       _ref.read(sessionContextRepositoryProvider);
+
+  static bool _sameSessionSettings(AppSettings? a, AppSettings? b) {
+    if (a == null || b == null) return a == b;
+    return a.llmProvider == b.llmProvider &&
+        a.llmModel == b.llmModel &&
+        a.readOnlyMode == b.readOnlyMode &&
+        a.maxRows == b.maxRows &&
+        a.queryTimeoutSeconds == b.queryTimeoutSeconds;
+  }
+
+  void _onAppSettingsChanged(
+    AsyncValue<AppSettings>? previous,
+    AsyncValue<AppSettings> next,
+  ) {
+    if (previous == null) return;
+    final settings = next.valueOrNull;
+    if (settings == null) return;
+    if (!state.isConnected) return;
+    if (_sameSessionSettings(previous.valueOrNull, settings)) return;
+    if (state.isBusy) {
+      _pendingSettingsRefresh = true;
+      return;
+    }
+    unawaited(_refreshFromSettings(settings));
+  }
+
+  Future<void> _applySettings(AppSettings settings) async {
+    final safetyPolicy = SafetyPolicy(readOnlyMode: settings.readOnlyMode);
+    _schemaService ??= SchemaService(_client);
+    _queryExecutor = QueryExecutor(
+      client: _client,
+      safetyPolicy: safetyPolicy,
+      schemaService: _schemaService,
+      maxRows: settings.maxRows,
+      queryTimeout: Duration(seconds: settings.queryTimeoutSeconds),
+      confirmationHandler: _handleConfirmation,
+    );
+    final llm = await _buildLlmProvider(settings);
+    _orchestrator = AiAgentOrchestrator(
+      llmProvider: llm,
+      schemaService: _schemaService!,
+      queryExecutor: _queryExecutor!,
+    );
+  }
+
+  Future<void> _refreshFromSettings(AppSettings settings) async {
+    final previousProvider = state.llmProvider;
+    final previousModel = state.llmModel;
+    try {
+      await _applySettings(settings);
+      final llmChanged = previousProvider != settings.llmProvider ||
+          previousModel != settings.llmModel;
+      final newLines = llmChanged
+          ? [...state.lines, SystemLine(_llmSystemLine(settings))]
+          : state.lines;
+      state = state.copyWith(
+        llmProvider: settings.llmProvider,
+        llmModel: settings.llmModel,
+        lines: newLines,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        lines: [...state.lines, transcriptErrorLineForNlFailure(e)],
+      );
+    }
+  }
+
+  Future<void> _applyPendingSettingsRefreshIfNeeded() async {
+    if (!_pendingSettingsRefresh || state.isBusy || !state.isConnected) {
+      return;
+    }
+    _pendingSettingsRefresh = false;
+    try {
+      final settings = await _ref.read(appSettingsProvider.future);
+      await _refreshFromSettings(settings);
+    } catch (e) {
+      state = state.copyWith(
+        lines: [...state.lines, transcriptErrorLineForNlFailure(e)],
+      );
+    }
+  }
 
   Future<void> _connect() async {
     state = state.copyWith(isBusy: true, clearError: true);
@@ -195,23 +278,7 @@ class SessionController extends StateNotifier<SessionState> {
       _ref.invalidate(connectionsListProvider);
 
       final settings = await _ref.read(appSettingsProvider.future);
-      final safetyPolicy = SafetyPolicy(readOnlyMode: settings.readOnlyMode);
-      _schemaService = SchemaService(_client);
-      _queryExecutor = QueryExecutor(
-        client: _client,
-        safetyPolicy: safetyPolicy,
-        schemaService: _schemaService,
-        maxRows: settings.maxRows,
-        queryTimeout: Duration(seconds: settings.queryTimeoutSeconds),
-        confirmationHandler: _handleConfirmation,
-      );
-
-      final llm = await _buildLlmProvider(settings);
-      _orchestrator = AiAgentOrchestrator(
-        llmProvider: llm,
-        schemaService: _schemaService!,
-        queryExecutor: _queryExecutor!,
-      );
+      await _applySettings(settings);
 
       _sessionContext = await _sessionContextRepo.load(connectionId);
       final restoredLines = _contextBuilder.buildTranscriptLines(_sessionContext!);
@@ -311,6 +378,7 @@ class SessionController extends StateNotifier<SessionState> {
             lines: [...state.lines, ResultLine(result), AssistantLine(reply)],
             isBusy: false,
           );
+          await _applyPendingSettingsRefreshIfNeeded();
         } catch (e) {
           state = state.copyWith(
             lines: [
@@ -319,6 +387,7 @@ class SessionController extends StateNotifier<SessionState> {
             ],
             isBusy: false,
           );
+          await _applyPendingSettingsRefreshIfNeeded();
         }
         return;
       }
@@ -376,11 +445,13 @@ class SessionController extends StateNotifier<SessionState> {
         lines: [...state.lines, ...newLines],
         isBusy: false,
       );
+      await _applyPendingSettingsRefreshIfNeeded();
     } catch (e) {
       state = state.copyWith(
         lines: [...state.lines, transcriptErrorLineForNlFailure(e)],
         isBusy: false,
       );
+      await _applyPendingSettingsRefreshIfNeeded();
     }
   }
 
@@ -460,11 +531,13 @@ class SessionController extends StateNotifier<SessionState> {
         lines: [...state.lines, ResultLine(result), AssistantLine(reply)],
         isBusy: false,
       );
+      await _applyPendingSettingsRefreshIfNeeded();
     } catch (e) {
       state = state.copyWith(
         lines: [...state.lines, transcriptErrorLineForExecuteFailure(e)],
         isBusy: false,
       );
+      await _applyPendingSettingsRefreshIfNeeded();
     }
   }
 }
