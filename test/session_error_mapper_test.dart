@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -194,6 +195,32 @@ void main() {
       );
       expect(mapped.message, contains('Not connected'));
       expect(mapped.action, SessionRecoveryAction.none);
+    });
+
+    test('maps query timeout with duration to settings action', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        TimeoutException(
+          'Future not completed',
+          const Duration(seconds: 30),
+        ),
+      );
+      expect(mapped.message.toLowerCase(), contains('timed out'));
+      expect(mapped.message, contains('30 second'));
+      expect(mapped.message, contains('Settings'));
+      expect(mapped.message, isNot(contains('TimeoutException')));
+      expect(mapped.action, SessionRecoveryAction.settings);
+    });
+
+    test('maps query timeout without duration to settings action', () {
+      final mapped = SessionErrorMapper.mapExecuteFailure(
+        TimeoutException('Future not completed'),
+      );
+      expect(mapped.message.toLowerCase(), contains('timed out'));
+      expect(
+        mapped.message,
+        anyOf(contains('configured limit'), contains('Settings')),
+      );
+      expect(mapped.action, SessionRecoveryAction.settings);
     });
 
     test('maps socket failures to host reachability message', () {
