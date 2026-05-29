@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import '../../domain/models/models.dart';
@@ -99,6 +100,19 @@ abstract final class SessionErrorMapper {
           message: 'Could not confirm this query. Reconnect and try again.',
         );
       }
+    }
+
+    if (error is TimeoutException) {
+      final seconds = error.duration?.inSeconds;
+      final limit = seconds != null && seconds > 0
+          ? '$seconds second${seconds == 1 ? '' : 's'}'
+          : 'the configured limit';
+      return SessionErrorMapping(
+        message:
+            'Query timed out after $limit. '
+            'Increase query timeout in Settings to run longer SQL.',
+        action: SessionRecoveryAction.settings,
+      );
     }
 
     final text = error.toString();

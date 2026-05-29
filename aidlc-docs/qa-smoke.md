@@ -19,6 +19,7 @@ Run before every release and after user-facing PRs (~5 minutes).
 5b. **NL LLM error** — Set wrong API key in Settings, reconnect, natural-language ask. Transcript shows mapped error (not raw exception) and Open Settings affordance.
 6. **Direct SQL** — `sql: SELECT 1` shows result table.
 6b. **Row-cap notice** — `sql: SELECT * FROM generate_series(1, 500)` (or any large SELECT without `LIMIT`) shows ≤`maxRows` rows and a muted footer (`row cap` / `may be partial`). `sql: SELECT 1 LIMIT 10` shows no footer.
+6c. **Query timeout transcript** — Set **Query timeout** to minimum (**5** seconds), save, return to open session. Run `sql: SELECT pg_sleep(10)`. Transcript shows mapped timeout line naming **5** seconds (or “configured limit”) and Settings guidance — not `TimeoutException` / `Future not completed` raw string.
 7. **Safety** — Read-only mode blocks INSERT; destructive SQL prompts confirmation.
 7b. **Read-only transcript** — Enable read-only in Settings, save, return to open session (no reconnect), run `sql: INSERT INTO …`. Transcript shows mapped read-only message and Open Settings (not raw StateError).
 7c. **Cancelled SQL** — With read-only off, run destructive/write SQL, cancel confirmation sheet. Transcript shows mapped cancelled message.
